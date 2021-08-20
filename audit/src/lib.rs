@@ -23,13 +23,13 @@ use frame_system::{
     ensure_signed, 
     pallet_prelude::*
 };
-use sp_runtime::{
+use frame_support::sp_runtime::{
     RuntimeDebug,
     traits::{
         Hash,
     }
 };
-use sp_std::{
+use frame_support::sp_std::{
     cmp::{
         Eq, 
         PartialEq}, 
