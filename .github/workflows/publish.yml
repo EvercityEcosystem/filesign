@@ -20,7 +20,7 @@ jobs:
     create-latest-image:
         name: Create latest docker image
         runs-on: ubuntu-latest
-        if: contains( github.ref, 'refs/tags/') == false && ( github.ref == 'refs/heads/master' || github.ref == 'refs/heads/deploy')
+        if: contains( github.ref, 'refs/tags/') == false && ( github.ref == 'refs/heads/master')
         steps:
             -
                 name: Cancel Previous Runs
@@ -82,7 +82,7 @@ jobs:
     skip:
         name: Skip build image and deploy
         runs-on: ubuntu-latest
-        if: contains( github.ref, 'refs/tags/') == false && github.ref != 'refs/heads/master' && github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/deploy'
+        if: contains( github.ref, 'refs/tags/') == false && github.ref != 'refs/heads/master' && github.ref != 'refs/heads/develop'
         steps:
             - name: Cancel Previous Runs
               uses: styfle/cancel-workflow-action@0.4.1
