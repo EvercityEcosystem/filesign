@@ -54,4 +54,4 @@ Go to [extrinsics](https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A9944
 
 works with JUL template
 
-git clone -b v3.0.0+monthly-2021-07 --depth 1 https://github.com/substrate-developer-hub/substrate-node-template)
+git clone -b v3.0.0+monthly-2021-07 --depth 1 https://github.com/substrate-developer-hub/substrate-node-template
