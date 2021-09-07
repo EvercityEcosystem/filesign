@@ -182,7 +182,7 @@ decl_module! {
 
             let new_file = FileStruct {
                 owner: caller,
-                id: last_id,
+                id: new_id,
                 versions: versions,
                 auditors: Vec::new(),
             };

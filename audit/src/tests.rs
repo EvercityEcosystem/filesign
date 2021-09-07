@@ -18,8 +18,29 @@ fn it_works_for_create_new_file() {
 
 		assert_ok!(create_file_result, ());
 		assert_eq!(owner, file.owner);
+		assert_eq!(1, file.id);
 		assert_eq!(1, file.versions.len());
 		assert_eq!(0, file.auditors.len());
+	});
+}
+
+#[test]
+fn it_works_for_create_new_file_increment_version() {
+	new_test_ext().execute_with(|| {
+		let tag = vec![40, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+		let filehash = 666_666_u64;
+		let owner1 = 1;
+		let owner2 = 1;
+
+		let _ = Audit::create_new_file(Origin::signed(owner1), tag.clone(), filehash);
+		let _ = Audit::create_new_file(Origin::signed(owner2), tag.clone(), filehash);
+		let file1 = Audit::get_file_by_id(1);
+		let file2 = Audit::get_file_by_id(2);
+
+		assert_eq!(owner1, file1.owner);
+		assert_eq!(1, file1.id);
+		assert_eq!(owner2, file2.owner);
+		assert_eq!(2, file2.id);
 	});
 }
 
