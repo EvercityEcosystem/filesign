@@ -19,7 +19,7 @@ env:
 jobs:
     create-latest-image:
         name: Create latest docker image
-        runs-on: self-hosted
+        runs-on: ubuntu-latest
         if: contains( github.ref, 'refs/tags/') == false && ( github.ref == 'refs/heads/master')
         steps:
             -
