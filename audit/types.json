@@ -5,7 +5,7 @@
   },
   "VersionStruct": {
     "tag": "Vec<u8>",
-    "filehash": "u64",
+    "filehash": "H256",
     "signatures": "Vec<SigStruct<AccountId>>"
   },
   "FileStruct": {

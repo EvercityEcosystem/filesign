@@ -38,16 +38,23 @@ use frame_support::sp_std::{
     },
 };
 
+use fixed_hash::construct_fixed_hash;
+
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 
 #[cfg(test)]
 mod mock;
 
-#[cfg(test)]
+#[cfg(test)]    
 mod tests;
 
-pub type FileHash = Vec<u8>;
+construct_fixed_hash! {
+    /// 256 bit hash type for signing files
+    #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+    #[derive(Encode, Decode)]
+    pub struct H256(32);
+}
 
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[derive(Encode, Decode, Clone, Default, Eq, PartialEq, RuntimeDebug)]
@@ -61,7 +68,7 @@ pub struct SigStruct<AccountId> {
 #[derive(Encode, Decode, Clone, Default, Eq, PartialEq, RuntimeDebug)]
 pub struct VersionStruct<AccountId> {
     pub tag: Vec<u8>,
-    pub filehash: u64,
+    pub filehash: H256,
     pub signatures: Vec<SigStruct<AccountId>>,
 }
 
@@ -74,10 +81,6 @@ pub struct FileStruct<AccountId> {
     pub versions: Vec<VersionStruct<AccountId>>,
     pub auditors: Vec<AccountId>,
 }
-
-pub type FileStructOf<T> = FileStruct<
-    <T as frame_system::Config>::AccountId,
->;
 
 impl<AccountId> FileStruct<AccountId> {
     // Assigns a new auditor to a file
@@ -113,9 +116,7 @@ impl<AccountId> FileStruct<AccountId> {
     }
 }
 
-pub trait Config: frame_system::Config {
-    
-}
+pub trait Config: frame_system::Config {}
 
 decl_storage! {
     trait Store for Module<T: Config> as Audit {
@@ -159,7 +160,7 @@ decl_module! {
 		}
 
         #[weight = 10_000]
-        pub fn create_new_file(origin, tag: Vec<u8>, filehash: u64) -> DispatchResult {
+        pub fn create_new_file(origin, tag: Vec<u8>, filehash: H256) -> DispatchResult {
             if tag.len() == 0 {
                 return Err(DispatchError::Other("empty file error"))
             }
