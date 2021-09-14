@@ -93,31 +93,13 @@ decl_module! {
         #[weight = 10_000]
         pub fn create_new_file(origin, tag: Vec<u8>, filehash: H256) -> DispatchResult {
             if tag.len() == 0 {
-                return Err(DispatchError::Other("empty file error"))
+                return Err(DispatchError::Other("empty input file"))
             }
-
             let caller = ensure_signed(origin)?;
             
-            let empty_vec: Vec<SigStruct<<T as frame_system::Config>::AccountId>> = Vec::new();
-            let latest_version = VersionStruct {
-                tag,
-                filehash,
-                signatures: empty_vec,
-            };
-
-            let mut versions = Vec::with_capacity(1);
-            versions.push(latest_version);
-
             // Update last created file ID
-            let last_id = LastID::get();
-            let new_id = last_id + 1;
-
-            let new_file = FileStruct {
-                owner: caller,
-                id: new_id,
-                versions: versions,
-                auditors: Vec::new(),
-            };
+            let new_id = LastID::get() + 1;
+            let new_file = FileStruct::<<T as frame_system::Config>::AccountId>::new(caller, new_id, tag, &filehash);
 
             <FileByID<T>>::insert(new_id, new_file);
             LastID::mutate(|x| *x += 1);
@@ -125,13 +107,13 @@ decl_module! {
             Ok(())
         }
 
-        #[weight = 10_000]
-        pub fn get_info_by_tag(origin, id: u32, tag: Vec<u8>) // -> VersionStruct<<T as frame_system::Config>::AccountId> 
-        {
-            let file = FileByID::<T>::get(id);
-            let index = file.versions.iter().position(|v| v.tag == tag).unwrap();
-            // TODO: return file.versions[index]
-        }
+        // #[weight = 10_000]
+        // pub fn get_info_by_tag(origin, id: u32, tag: Vec<u8>) // -> VersionStruct<<T as frame_system::Config>::AccountId> 
+        // {
+        //     let file = FileByID::<T>::get(id);
+        //     let index = file.versions.iter().position(|v| v.tag == tag).unwrap();
+        //     // TODO: return file.versions[index]
+        // }
         
         #[weight = 10_000]
         pub fn delete_auditor(origin, id: u32, auditor: T::AccountId)  {
@@ -140,13 +122,12 @@ decl_module! {
 
             FileByID::<T>::try_mutate(
                 id, |file_by_id| -> DispatchResult {
-                    let index = match file_by_id.auditors.iter().position(|a| a == &auditor) {
-                        Some(i) => i,
-                        None => return Err(DispatchError::Other("no auditor"))
-                    };
-                    file_by_id.auditors.remove(index);
+                    if let Err(_) = file_by_id.delete_auditor_from_file(auditor) {
+                        return Err(DispatchError::Other("no auditor"));
+                    }
                     Ok(())
-                })?;
+                }
+            )?;
         }
 
         #[weight = 10_000]
@@ -156,11 +137,10 @@ decl_module! {
 
             FileByID::<T>::try_mutate(
                 id, |file_by_id| -> DispatchResult {
-                    if !file_by_id.auditors.iter().any(|x| *x == caller) {
-                        file_by_id.auditors.push(auditor);
-                    }          
+                    file_by_id.assign_auditor_to_file(auditor, caller);
                     Ok(())
-                })?;
+                }
+            )?;
         }
     }
 }
@@ -173,7 +153,7 @@ impl<T: Config> Module<T> {
     /// Checks if the address is an auditor for the given file
     /// </pre>
     pub fn address_is_auditor_for_file(id: u32, address: &T::AccountId) -> bool {
-        FileByID::<T>::get(id).auditors.iter().any(|x| x == address)
+        FileByID::<T>::get(id).get_auditors().iter().any(|x| x == address)
     }
 
     /// <pre>

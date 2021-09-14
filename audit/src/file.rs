@@ -38,33 +38,52 @@ pub struct VersionStruct<AccountId> {
 }
 
 
+/// Main File Domain
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[derive(Encode, Decode, Clone, Default, Eq, PartialEq, RuntimeDebug)]
-pub struct FileStruct<AccountId> {
+pub struct FileStruct<AccountId> where AccountId: PartialEq {
     pub owner: AccountId,
     pub id: u32,
     pub versions: Vec<VersionStruct<AccountId>>,
     pub auditors: Vec<AccountId>,
 }
 
-impl<AccountId> FileStruct<AccountId> {
+impl<AccountId> FileStruct<AccountId> where AccountId: PartialEq {
+    // Constructor
+    pub fn new(owner: AccountId, id: u32, tag: Vec<u8>, filehash: &H256) -> Self {
+        let empty_vec = Vec::new();
+        let latest_version = VersionStruct {
+            tag,
+            filehash: *filehash,
+            signatures: empty_vec,
+        };
+
+        let mut versions = Vec::with_capacity(1);
+        versions.push(latest_version);
+
+        FileStruct {
+            owner,
+            id,
+            versions,
+            auditors: Vec::new(),
+        }
+    }
+
     // Assigns a new auditor to a file
-    fn assign_auditor_to_file (
-        mut file: FileStruct<AccountId>, 
-        new_auditor: AccountId
-    ) -> FileStruct<AccountId> {
-        file.auditors.push(new_auditor);
-        file
+    pub fn assign_auditor_to_file (&mut self, auditor: AccountId, caller: AccountId) {
+        if !self.auditors.iter().any(|x| *x == caller){
+            self.auditors.push(auditor);
+        }    
     }
 
     // Removes auditor from file
-    fn delete_auditor_from_file (
-        mut file: FileStruct<AccountId>, 
-        auditor: AccountId
-    ) -> FileStruct<AccountId> where AccountId: PartialEq {
-        let index = file.auditors.iter().position(|x| x == &auditor).unwrap();
-        file.auditors.remove(index);
-        file
+    pub fn delete_auditor_from_file (&mut self, auditor: AccountId) -> Result<(), ()> {
+        let index = match self.auditors.iter().position(|a| a == &auditor) {
+            Some(i) => i,
+            None => return Err(())
+        };
+        self.auditors.remove(index);
+        Ok(())
     }
 
     // Asserts that the latest version of file has no missing signatures from auditors
@@ -78,5 +97,9 @@ impl<AccountId> FileStruct<AccountId> {
             }
         }
         true
+    }
+
+    pub fn get_auditors(&self) -> &Vec<AccountId> {
+        &self.auditors
     }
 }
