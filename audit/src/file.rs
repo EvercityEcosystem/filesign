@@ -69,6 +69,18 @@ impl<AccountId> FileStruct<AccountId> where AccountId: PartialEq {
         }
     }
 
+    pub fn sign_latest_version(&mut self, caller: AccountId) {
+        let latest_version = self.versions.last_mut().unwrap();
+
+        // here check if has already signed
+        match latest_version.signatures.iter().position(|sig| sig.address == caller) {
+            Some(_) => {/*new logic can be made in future here*/},
+            None => {
+                latest_version.signatures.push(SigStruct{address: caller, signed: true});         
+            }
+        }
+    }
+
     // Assigns a new auditor to a file
     pub fn assign_auditor_to_file (&mut self, auditor: AccountId, caller: AccountId) {
         if !self.auditors.iter().any(|x| *x == caller){
@@ -86,20 +98,11 @@ impl<AccountId> FileStruct<AccountId> where AccountId: PartialEq {
         Ok(())
     }
 
-    // Asserts that the latest version of file has no missing signatures from auditors
-    fn check_sig_status(&self) -> bool where AccountId: PartialEq {
-        let latest_version: &VersionStruct<AccountId> = self.versions.last().unwrap();   
-
-        // !self.auditors.iter().any(|aud| latest_version.signatures.iter().any(|x| x.address == *aud))
-        for aud in &self.auditors {
-            if !latest_version.signatures.iter().any(|x| x.address == *aud){
-                return false;
-            }
-        }
-        true
-    }
-
     pub fn get_auditors(&self) -> &Vec<AccountId> {
         &self.auditors
+    }
+
+    pub fn get_versions(&self) -> &Vec<VersionStruct<AccountId>> {
+        &self.versions
     }
 }

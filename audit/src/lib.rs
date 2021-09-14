@@ -65,6 +65,8 @@ decl_error! {
     pub enum Error for Module<T: Config> {
         AddressNotAuditor,
         AddressNotOwner,
+        EmptyFileInput,
+        AuditorDoesntExist
     }
 }
 
@@ -77,15 +79,7 @@ decl_module! {
             ensure!(Self::address_is_auditor_for_file(id, &caller), Error::<T>::AddressNotAuditor);
             FileByID::<T>::try_mutate(
                 id, |file_by_id| -> DispatchResult {
-                    let latest_version = file_by_id.versions.last_mut().unwrap();
-
-                    // here check if has already signed
-                    match latest_version.signatures.iter().position(|sig| sig.address == caller) {
-                        Some(_) => {/*new logic can be made in future here*/},
-                        None => {
-                            latest_version.signatures.push(SigStruct{address: caller, signed: true});         
-                        }
-                    }
+                    file_by_id.sign_latest_version(caller);
                     Ok(())
                 })?;
 		}
@@ -103,17 +97,8 @@ decl_module! {
 
             <FileByID<T>>::insert(new_id, new_file);
             LastID::mutate(|x| *x += 1);
-
             Ok(())
         }
-
-        // #[weight = 10_000]
-        // pub fn get_info_by_tag(origin, id: u32, tag: Vec<u8>) // -> VersionStruct<<T as frame_system::Config>::AccountId> 
-        // {
-        //     let file = FileByID::<T>::get(id);
-        //     let index = file.versions.iter().position(|v| v.tag == tag).unwrap();
-        //     // TODO: return file.versions[index]
-        // }
         
         #[weight = 10_000]
         pub fn delete_auditor(origin, id: u32, auditor: T::AccountId)  {
