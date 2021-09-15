@@ -19,9 +19,9 @@ fn it_works_for_create_new_file() {
 		assert_ok!(create_file_result, ());
 		assert_eq!(owner, file.owner);
 		assert_eq!(1, file.id);
-		assert_eq!(filehash, file.get_versions()[0].filehash);
-		assert_eq!(1, file.get_versions().len());
-		assert_eq!(0, file.get_auditors().len());
+		assert_eq!(filehash, file.versions[0].filehash);
+		assert_eq!(1, file.versions.len());
+		assert_eq!(0, file.auditors.len());
 	});
 }
 
@@ -73,10 +73,33 @@ fn it_works_assign_auditor() {
 
 		assert_ok!(create_file_result, ());
 		assert_ok!(assign_auditor_result, ());
-		assert_eq!(1, file.get_auditors().len());
-		assert_eq!(account_id, file.get_auditors()[0]);
+		assert_eq!(1, file.auditors.len());
+		assert_eq!(account_id, file.auditors[0]);
 	});
 }
+
+#[test]
+fn it_works_assign_auditor_do_no_dublicates() {
+	new_test_ext().execute_with(|| {
+		let tag = vec![40, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+		let filehash = H256::from([0x66; 32]);
+		let account_id = 2;
+
+		let create_file_result = Audit::create_new_file(Origin::signed(1), tag, filehash);
+		let assign_auditor_result = Audit::assign_auditor(Origin::signed(1), 1, account_id);
+
+		// Try Dublicate:
+		let _ = Audit::assign_auditor(Origin::signed(1), 1, account_id);
+
+		let file = Audit::get_file_by_id(1);
+
+		assert_ok!(create_file_result, ());
+		assert_ok!(assign_auditor_result, ());
+		assert_eq!(1, file.auditors.len());
+		assert_eq!(account_id, file.auditors[0]);
+	});
+}
+
 
 #[test]
 fn it_works_delete_auditor() {
@@ -98,9 +121,9 @@ fn it_works_delete_auditor() {
 		assert_ok!(create_file_result, ());
 		assert_ok!(assign_auditor_result, ());
 		assert_ok!(delete_auditor_result, ());
-		assert_eq!(1, file_with_auditor.get_auditors().len());
-		assert_eq!(account_id, file_with_auditor.get_auditors()[0]);
-		assert_eq!(0, file_without_auditor.get_auditors().len());
+		assert_eq!(1, file_with_auditor.auditors.len());
+		assert_eq!(account_id, file_with_auditor.auditors[0]);
+		assert_eq!(0, file_without_auditor.auditors.len());
 	});
 }
 
@@ -142,7 +165,7 @@ fn it_works_sign_latest_version() {
 
 		assert_ok!(assign_auditor_result, ());
 		assert_ok!(sign_latest_version_result, ());
-		assert_eq!(1, file.get_versions().last().unwrap().signatures.len());
+		assert_eq!(1, file.versions.last().unwrap().signatures.len());
 	});
 }
 
@@ -158,6 +181,6 @@ fn it_fail_sign_latest_version_not_an_auditor() {
 
 		assert_ne!(sign_latest_version_result, DispatchResult::Ok(()));
 		// Assert that no sign has been added
-		assert_eq!(0, file.get_versions().last().unwrap().signatures.len());
+		assert_eq!(0, file.versions.last().unwrap().signatures.len());
 	});
 }

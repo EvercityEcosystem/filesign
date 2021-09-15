@@ -102,7 +102,7 @@ decl_module! {
 
             FileByID::<T>::try_mutate(
                 id, |file_by_id| -> DispatchResult {
-                    file_by_id.assign_auditor_to_file(auditor, caller);
+                    file_by_id.assign_auditor_to_file(auditor);
                     Ok(())
                 }
             )?;
@@ -118,7 +118,7 @@ impl<T: Config> Module<T> {
     /// Checks if the address is an auditor for the given file
     /// </pre>
     pub fn address_is_auditor_for_file(id: u32, address: &T::AccountId) -> bool {
-        FileByID::<T>::get(id).get_auditors().iter().any(|x| x == address)
+        FileByID::<T>::get(id).auditors.iter().any(|x| x == address)
     }
 
     /// <pre>
