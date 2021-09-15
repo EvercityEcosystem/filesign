@@ -5,38 +5,23 @@ use frame_support::{
     decl_error, 
     decl_module, 
     decl_storage,
-    codec::{
-        Decode, 
-        Encode
-    },
     dispatch::{
         DispatchResult, 
         DispatchError, 
         Vec,
     },
-    traits::{
-        Get
-    },
 };
 use frame_system::{
     ensure_signed,
 };
-use frame_support::sp_runtime::{
-    RuntimeDebug,
-    traits::{
-        Hash,
-    }
-};
+
 use frame_support::sp_std::{
     cmp::{
         Eq, 
         PartialEq}, 
-    result::{
-        Result
-    },
 };
 
-use file::{VersionStruct, SigStruct, FileStruct, H256};
+use file::{FileStruct, H256};
 
 #[cfg(test)]
 mod mock;
@@ -44,8 +29,6 @@ mod mock;
 #[cfg(test)]    
 mod tests;
 mod file;
-
-
 
 pub trait Config: frame_system::Config {}
 
@@ -64,12 +47,9 @@ decl_storage! {
 decl_error! {
     pub enum Error for Module<T: Config> {
         AddressNotAuditor,
-        AddressNotOwner,
-        EmptyFileInput,
-        AuditorDoesntExist
+        AddressNotOwner
     }
 }
-
 
 decl_module! {
     pub struct Module<T: Config> for enum Call where origin: T::Origin {
