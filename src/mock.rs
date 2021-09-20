@@ -1,9 +1,16 @@
 use crate as pallet_audit;
-use sp_core::H256;
-use sp_runtime::{
-	traits::{BlakeTwo256, IdentityLookup}, testing::Header,
+// use sp_core::H256;
+// use frame_support::sp_runtime::{
+// 	traits::{BlakeTwo256, IdentityLookup}, testing::Header,
+// };
+// use frame_system as system;
+// use frame_support::parameter_types;
+use frame_support::sp_runtime::{
+    testing::Header,
+    traits::{BlakeTwo256, IdentityLookup},
 };
-use frame_system as system;
+use sp_core::H256;
+
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -15,12 +22,12 @@ frame_support::construct_runtime!(
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
-		System: frame_system::{Pallet, Call, Config, Storage},
-		Audit: pallet_audit::{Pallet, Call, Storage},
+		System: frame_system::{Module, Call, Config, Storage},
+		Audit: pallet_audit::{Module, Call, Storage},
 	}
 );
 
-impl system::Config for Test {
+impl frame_system::Config for Test {
 	type BaseCallFilter = ();
 	type BlockWeights = ();
 	type BlockLength = ();
@@ -43,13 +50,13 @@ impl system::Config for Test {
 	type OnKilledAccount = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
-	type OnSetCode = ();
+	// type OnSetCode = ();
 }
 
 impl pallet_audit::Config for Test {
 }
 
 // Build genesis storage according to the mock runtime.
-pub fn new_test_ext() -> sp_io::TestExternalities {
-	system::GenesisConfig::default().build_storage::<Test>().unwrap().into()
+pub fn new_test_ext() -> frame_support::sp_io::TestExternalities {
+	frame_system::GenesisConfig::default().build_storage::<Test>().unwrap().into()
 }
