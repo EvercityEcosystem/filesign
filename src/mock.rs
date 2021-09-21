@@ -12,12 +12,12 @@ use frame_support::sp_runtime::{
 use sp_core::H256;
 
 
-type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
-type Block = frame_system::mocking::MockBlock<Test>;
+type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<TestRuntime>;
+type Block = frame_system::mocking::MockBlock<TestRuntime>;
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
-	pub enum Test where
+	pub enum TestRuntime where
 		Block = Block,
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic,
@@ -27,7 +27,7 @@ frame_support::construct_runtime!(
 	}
 );
 
-impl frame_system::Config for Test {
+impl frame_system::Config for TestRuntime {
 	type BaseCallFilter = ();
 	type BlockWeights = ();
 	type BlockLength = ();
@@ -53,10 +53,10 @@ impl frame_system::Config for Test {
 	// type OnSetCode = ();
 }
 
-impl pallet_audit::Config for Test {
+impl pallet_audit::Config for TestRuntime {
 }
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> frame_support::sp_io::TestExternalities {
-	frame_system::GenesisConfig::default().build_storage::<Test>().unwrap().into()
+	frame_system::GenesisConfig::default().build_storage::<TestRuntime>().unwrap().into()
 }

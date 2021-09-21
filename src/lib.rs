@@ -15,6 +15,8 @@ use frame_system::{
     ensure_signed,
 };
 
+use frame_support::traits::IntegrityTest;
+
 use frame_support::sp_std::{
     cmp::{
         Eq, 
@@ -136,3 +138,7 @@ impl<T: Config> Module<T> {
         FileByID::<T>::get(id)
     }
 }
+
+// impl<T: Config> IntegrityTest for Module<T>  {
+//     fn integrity_test() {}
+// }
