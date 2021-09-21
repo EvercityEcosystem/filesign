@@ -26,10 +26,11 @@ use frame_support::sp_std::{
 use file::{FileStruct, H256};
 
 #[cfg(test)]
-mod mock;
+pub mod mock;
 
 #[cfg(test)]    
-mod tests;
+pub mod tests;
+
 mod file;
 
 pub trait Config: frame_system::Config {}
