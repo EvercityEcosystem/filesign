@@ -15,8 +15,6 @@ use frame_system::{
     ensure_signed,
 };
 
-use frame_support::traits::IntegrityTest;
-
 use frame_support::sp_std::{
     cmp::{
         Eq, 
@@ -26,11 +24,10 @@ use frame_support::sp_std::{
 use file::{FileStruct, H256};
 
 #[cfg(test)]
-pub mod mock;
+mod mock;
 
 #[cfg(test)]    
-pub mod tests;
-
+mod tests;
 mod file;
 
 pub trait Config: frame_system::Config {}
@@ -139,7 +136,3 @@ impl<T: Config> Module<T> {
         FileByID::<T>::get(id)
     }
 }
-
-// impl<T: Config> IntegrityTest for Module<T>  {
-//     fn integrity_test() {}
-// }
