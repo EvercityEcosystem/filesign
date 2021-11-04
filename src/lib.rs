@@ -31,7 +31,9 @@ mod mock;
 mod tests;
 mod file;
 
-pub trait Config: frame_system::Config {}
+pub trait Config: frame_system::Config {
+    type Event: From<Event<Self>> + Into<<Self as frame_system::Config>::Event>;
+}
 
 decl_storage! {
     trait Store for Module<T: Config> as Audit {
@@ -75,11 +77,12 @@ decl_module! {
             ensure!(Self::address_is_auditor_for_file(id, &caller), Error::<T>::AddressNotAuditor);
             FileByID::<T>::try_mutate(
                 id, |file_by_id| -> DispatchResult {
-                    file_by_id.sign_latest_version(caller);
+                    file_by_id.sign_latest_version(caller.clone());
 
-                    Self::deposit_event(RawEvent::FileSigned(caller, id));
                     Ok(())
                 })?;
+
+            Self::deposit_event(RawEvent::FileSigned(caller, id));
 		}
 
         #[weight = 10_000]
@@ -91,7 +94,7 @@ decl_module! {
             
             // Update last created file ID
             let new_id = LastID::get() + 1;
-            let new_file = FileStruct::<<T as frame_system::Config>::AccountId>::new(caller, new_id, tag, &filehash);
+            let new_file = FileStruct::<<T as frame_system::Config>::AccountId>::new(caller.clone(), new_id, tag, &filehash);
 
             <FileByID<T>>::insert(new_id, new_file);
             LastID::mutate(|x| *x += 1);
@@ -109,12 +112,12 @@ decl_module! {
                 id, |file_by_id| -> DispatchResult {
                     if let Err(_) = file_by_id.delete_auditor_from_file(auditor) {
                         return Err(DispatchError::Other("no auditor"));
-                    }
-
-                    Self::deposit_event(RawEvent::AuditorDeleted(caller, id));
+                    }  
                     Ok(())
                 }
             )?;
+
+            Self::deposit_event(RawEvent::AuditorDeleted(caller, id));
         }
 
         #[weight = 10_000]
@@ -125,11 +128,11 @@ decl_module! {
             FileByID::<T>::try_mutate(
                 id, |file_by_id| -> DispatchResult {
                     file_by_id.assign_auditor_to_file(auditor);
-
-                    Self::deposit_event(RawEvent::AuditorAssigned(caller, id));
                     Ok(())
                 }
             )?;
+
+            Self::deposit_event(RawEvent::AuditorAssigned(caller, id));
         }
     }
 }
