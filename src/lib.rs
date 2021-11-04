@@ -2,6 +2,7 @@
 
 use frame_support::{
     ensure,
+    decl_event,
     decl_error, 
     decl_module, 
     decl_storage,
@@ -44,6 +45,18 @@ decl_storage! {
     }
 }
 
+decl_event! (
+    pub enum Event<T>
+    where 
+        AccountId = <T as frame_system::Config>::AccountId,
+    {
+        AuditorAssigned(AccountId, u32),
+        FileCreated(AccountId, u32),
+        AuditorDeleted(AccountId, u32),
+        FileSigned(AccountId, u32),
+    }
+);
+
 decl_error! {
     pub enum Error for Module<T: Config> {
         AddressNotAuditor,
@@ -53,6 +66,9 @@ decl_error! {
 
 decl_module! {
     pub struct Module<T: Config> for enum Call where origin: T::Origin {
+        // Events must be initialized if they are used by the pallet.
+        fn deposit_event() = default;
+
         #[weight = 10_000]
 		pub fn sign_latest_version(origin, id: u32) {
 			let caller = ensure_signed(origin)?;
@@ -60,6 +76,8 @@ decl_module! {
             FileByID::<T>::try_mutate(
                 id, |file_by_id| -> DispatchResult {
                     file_by_id.sign_latest_version(caller);
+
+                    Self::deposit_event(RawEvent::FileSigned(caller, id));
                     Ok(())
                 })?;
 		}
@@ -77,6 +95,8 @@ decl_module! {
 
             <FileByID<T>>::insert(new_id, new_file);
             LastID::mutate(|x| *x += 1);
+
+            Self::deposit_event(RawEvent::FileCreated(caller, new_id));
             Ok(())
         }
         
@@ -90,6 +110,8 @@ decl_module! {
                     if let Err(_) = file_by_id.delete_auditor_from_file(auditor) {
                         return Err(DispatchError::Other("no auditor"));
                     }
+
+                    Self::deposit_event(RawEvent::AuditorDeleted(caller, id));
                     Ok(())
                 }
             )?;
@@ -103,6 +125,8 @@ decl_module! {
             FileByID::<T>::try_mutate(
                 id, |file_by_id| -> DispatchResult {
                     file_by_id.assign_auditor_to_file(auditor);
+
+                    Self::deposit_event(RawEvent::AuditorAssigned(caller, id));
                     Ok(())
                 }
             )?;
