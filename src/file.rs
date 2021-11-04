@@ -36,7 +36,7 @@ pub struct FileStruct<AccountId> where AccountId: PartialEq {
     pub owner: AccountId,
     pub id: u32,
     pub versions: Vec<VersionStruct<AccountId>>,
-    pub auditors: Vec<AccountId>,
+    pub signers: Vec<AccountId>,
 }
 
 impl<AccountId> FileStruct<AccountId> where AccountId: PartialEq {
@@ -56,7 +56,7 @@ impl<AccountId> FileStruct<AccountId> where AccountId: PartialEq {
             owner,
             id,
             versions,
-            auditors: Vec::new(),
+            signers: Vec::new(),
         }
     }
 
@@ -73,20 +73,20 @@ impl<AccountId> FileStruct<AccountId> where AccountId: PartialEq {
         }
     }
 
-    // Assigns a new auditor to a file
-    pub fn assign_auditor_to_file (&mut self, auditor: AccountId) {
-        if !self.auditors.iter().any(|x| *x == auditor){
-            self.auditors.push(auditor);
+    // Assigns a new signer to a file
+    pub fn assign_signer_to_file (&mut self, signer: AccountId) {
+        if !self.signers.iter().any(|x| *x == signer){
+            self.signers.push(signer);
         }    
     }
 
-    // Removes auditor from file
-    pub fn delete_auditor_from_file (&mut self, auditor: AccountId) -> Result<(), ()> {
-        let index = match self.auditors.iter().position(|a| a == &auditor) {
+    // Removes signer from file
+    pub fn delete_signer_from_file (&mut self, signer: AccountId) -> Result<(), ()> {
+        let index = match self.signers.iter().position(|a| a == &signer) {
             Some(i) => i,
             None => return Err(())
         };
-        self.auditors.remove(index);
+        self.signers.remove(index);
         Ok(())
     }
 }

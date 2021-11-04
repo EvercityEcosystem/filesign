@@ -52,16 +52,20 @@ decl_event! (
     where 
         AccountId = <T as frame_system::Config>::AccountId,
     {
-        AuditorAssigned(AccountId, u32),
+        /// \[account, fileid, signer\]
+        SignerAssigned(AccountId, u32, AccountId),
+        /// \[account, fileid\]
         FileCreated(AccountId, u32),
-        AuditorDeleted(AccountId, u32),
+        /// \[account, fileid, signer\]
+        SignerDeleted(AccountId, u32, AccountId),
+        /// \[account, fileid\]
         FileSigned(AccountId, u32),
     }
 );
 
 decl_error! {
     pub enum Error for Module<T: Config> {
-        AddressNotAuditor,
+        AddressNotSigner,
         AddressNotOwner
     }
 }
@@ -74,7 +78,7 @@ decl_module! {
         #[weight = 10_000]
 		pub fn sign_latest_version(origin, id: u32) {
 			let caller = ensure_signed(origin)?;
-            ensure!(Self::address_is_auditor_for_file(id, &caller), Error::<T>::AddressNotAuditor);
+            ensure!(Self::address_is_signer_for_file(id, &caller), Error::<T>::AddressNotSigner);
             FileByID::<T>::try_mutate(
                 id, |file_by_id| -> DispatchResult {
                     file_by_id.sign_latest_version(caller.clone());
@@ -104,48 +108,48 @@ decl_module! {
         }
         
         #[weight = 10_000]
-        pub fn delete_auditor(origin, id: u32, auditor: T::AccountId)  {
+        pub fn delete_signer(origin, id: u32, signer: T::AccountId)  {
             let caller = ensure_signed(origin)?;
             ensure!(Self::address_is_owner_for_file(id, &caller), Error::<T>::AddressNotOwner);
 
             FileByID::<T>::try_mutate(
                 id, |file_by_id| -> DispatchResult {
-                    if let Err(_) = file_by_id.delete_auditor_from_file(auditor) {
-                        return Err(DispatchError::Other("no auditor"));
+                    if let Err(_) = file_by_id.delete_signer_from_file(signer.clone()) {
+                        return Err(DispatchError::Other("no signer"));
                     }  
                     Ok(())
                 }
             )?;
 
-            Self::deposit_event(RawEvent::AuditorDeleted(caller, id));
+            Self::deposit_event(RawEvent::SignerDeleted(caller, id, signer));
         }
 
         #[weight = 10_000]
-        pub fn assign_auditor(origin, id: u32, auditor: T::AccountId) {
+        pub fn assign_signer(origin, id: u32, signer: T::AccountId) {
             let caller = ensure_signed(origin)?;
             ensure!(Self::address_is_owner_for_file(id, &caller), Error::<T>::AddressNotOwner);
 
             FileByID::<T>::try_mutate(
                 id, |file_by_id| -> DispatchResult {
-                    file_by_id.assign_auditor_to_file(auditor);
+                    file_by_id.assign_signer_to_file(signer.clone());
                     Ok(())
                 }
             )?;
 
-            Self::deposit_event(RawEvent::AuditorAssigned(caller, id));
+            Self::deposit_event(RawEvent::SignerAssigned(caller, id, signer));
         }
     }
 }
 
 impl<T: Config> Module<T> {
     /// <pre>
-    /// Method: address_is_auditor_for_file(id: u32, address: &T::AccountId) -> bool
+    /// Method: address_is_signer_for_file(id: u32, address: &T::AccountId) -> bool
     /// Arguments: id: u32, address: &T::AccountId - file ID, address
     ///
-    /// Checks if the address is an auditor for the given file
+    /// Checks if the address is an signer for the given file
     /// </pre>
-    pub fn address_is_auditor_for_file(id: u32, address: &T::AccountId) -> bool {
-        FileByID::<T>::get(id).auditors.iter().any(|x| x == address)
+    pub fn address_is_signer_for_file(id: u32, address: &T::AccountId) -> bool {
+        FileByID::<T>::get(id).signers.iter().any(|x| x == address)
     }
 
     /// <pre>
