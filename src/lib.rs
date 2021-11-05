@@ -77,6 +77,7 @@ decl_module! {
     pub struct Module<T: Config> for enum Call where origin: T::Origin {
         // Events must be initialized if they are used by the pallet.
         fn deposit_event() = default;
+        type Error = Error<T>;
 
         #[weight = 10_000]
 		pub fn sign_latest_version(origin, id: u32) {
