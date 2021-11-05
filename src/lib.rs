@@ -7,8 +7,7 @@ use frame_support::{
     decl_module, 
     decl_storage,
     dispatch::{
-        DispatchResult, 
-        DispatchError, 
+        DispatchResult,
         Vec,
     },
 };
@@ -40,7 +39,7 @@ decl_storage! {
         /// Storage map for file IDs
         FileByID
             get(fn file_by_id):
-            map hasher(blake2_128_concat) u32 => FileStruct<T::AccountId>;   
+            map hasher(blake2_128_concat) u32 => Option<FileStruct<T::AccountId>>;   
 
         /// Last Id of created file
         LastID: u32;
@@ -82,12 +81,17 @@ decl_module! {
         #[weight = 10_000]
 		pub fn sign_latest_version(origin, id: u32) {
 			let caller = ensure_signed(origin)?;
-            ensure!(FileByID::<T>::contains_key(id), Error::<T>::FileNotFound);
-            ensure!(Self::address_is_signer_for_file(id, &caller), Error::<T>::AddressNotSigner);
+            match FileByID::<T>::get(id) {
+                None => Err(Error::<T>::FileNotFound)?,
+                Some(file) => {
+                    ensure!(Self::address_is_signer_for_file(&file, &caller), Error::<T>::AddressNotSigner);
+                }
+            }
 
             FileByID::<T>::try_mutate(
                 id, |file_by_id| -> DispatchResult {
-                    file_by_id.sign_latest_version(caller.clone());
+                    ensure!(file_by_id.as_ref().is_some(), Error::<T>::FileNotFound);
+                    file_by_id.as_mut().unwrap().sign_latest_version(caller.clone());
 
                     Ok(())
                 })?;
@@ -114,12 +118,17 @@ decl_module! {
         #[weight = 10_000]
         pub fn delete_signer(origin, id: u32, signer: T::AccountId)  {
             let caller = ensure_signed(origin)?;
-            ensure!(FileByID::<T>::contains_key(id), Error::<T>::FileNotFound);
-            ensure!(Self::address_is_owner_for_file(id, &caller), Error::<T>::AddressNotOwner);
+            match FileByID::<T>::get(id) {
+                None => Err(Error::<T>::FileNotFound)?,
+                Some(file) => {
+                    ensure!(Self::address_is_owner_for_file(&file, &caller), Error::<T>::AddressNotOwner);
+                }
+            }
 
             FileByID::<T>::try_mutate(
                 id, |file_by_id| -> DispatchResult {
-                    ensure!(file_by_id.delete_signer_from_file(signer.clone()).is_ok(), 
+                    ensure!(file_by_id.as_ref().is_some(), Error::<T>::FileNotFound);
+                    ensure!(file_by_id.as_mut().unwrap().delete_signer_from_file(signer.clone()).is_ok(), 
                         Error::<T>::FileHasNoSigners);
 
                     Ok(())
@@ -132,12 +141,17 @@ decl_module! {
         #[weight = 10_000]
         pub fn assign_signer(origin, id: u32, signer: T::AccountId) {
             let caller = ensure_signed(origin)?;
-            ensure!(FileByID::<T>::contains_key(id), Error::<T>::FileNotFound);
-            ensure!(Self::address_is_owner_for_file(id, &caller), Error::<T>::AddressNotOwner);
+            match FileByID::<T>::get(id) {
+                None => Err(Error::<T>::FileNotFound)?,
+                Some(file) => {
+                    ensure!(Self::address_is_owner_for_file(&file, &caller), Error::<T>::AddressNotOwner);
+                }
+            }
 
             FileByID::<T>::try_mutate(
                 id, |file_by_id| -> DispatchResult {
-                    file_by_id.assign_signer_to_file(signer.clone());
+                    ensure!(file_by_id.as_ref().is_some(), Error::<T>::FileNotFound);
+                    file_by_id.as_mut().unwrap().assign_signer_to_file(signer.clone());
                     Ok(())
                 }
             )?;
@@ -149,27 +163,29 @@ decl_module! {
 
 impl<T: Config> Module<T> {
     /// <pre>
-    /// Method: address_is_signer_for_file(id: u32, address: &T::AccountId) -> bool
-    /// Arguments: id: u32, address: &T::AccountId - file ID, address
+    /// Method: address_is_signer_for_file(file: &FileStruct<T::AccountId>, address: &T::AccountId) -> bool
+    /// Arguments: file: &FileStruct<T::AccountId>, address: &T::AccountId - file, address
     ///
     /// Checks if the address is an signer for the given file
     /// </pre>
-    pub fn address_is_signer_for_file(id: u32, address: &T::AccountId) -> bool {
-        FileByID::<T>::get(id).signers.iter().any(|x| x == address)
+    pub fn address_is_signer_for_file(file: &FileStruct<T::AccountId>,
+         address: &T::AccountId) -> bool {
+        file.signers.iter().any(|x| x == address)
     }
 
     /// <pre>
-    /// Method: address_is_owner_for_file(id: u32, address: &T::AccountId) -> bool
-    /// Arguments: id: u32, address: &T::AccountId - file ID, address
+    /// Method: address_is_owner_for_file(file: &FileStruct<T::AccountId>, address: &T::AccountId) -> bool
+    /// Arguments: file: &FileStruct<T::AccountId>, address: &T::AccountId - file, address
     ///
     /// Checks if the address is the owner for the given file
     /// </pre>
-    pub fn address_is_owner_for_file(id: u32, address: &T::AccountId) -> bool {
-        FileByID::<T>::get(id).owner == *address
+    pub fn address_is_owner_for_file(file: &FileStruct<T::AccountId>,
+         address: &T::AccountId) -> bool {
+        file.owner == *address
     }
 
     #[cfg(test)]
-    fn get_file_by_id(id: u32) -> FileStruct<<T as frame_system::Config>::AccountId> {
+    fn get_file_by_id(id: u32) -> Option<FileStruct<<T as frame_system::Config>::AccountId>> {
         FileByID::<T>::get(id)
     }
 }

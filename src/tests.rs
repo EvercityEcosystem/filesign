@@ -14,7 +14,10 @@ fn it_works_for_create_new_file() {
 		let owner = 3;
 
 		let create_file_result = Filesign::create_new_file(Origin::signed(owner), tag.clone(), filehash);
-		let file = Filesign::get_file_by_id(1);
+		let file_option = Filesign::get_file_by_id(1);
+		
+		assert!(file_option.is_some());
+		let file = file_option.unwrap();
 
 		assert_ok!(create_file_result, ());
 		assert_eq!(owner, file.owner);
@@ -35,8 +38,13 @@ fn it_works_for_create_new_file_increment_version() {
 
 		let _ = Filesign::create_new_file(Origin::signed(owner1), tag.clone(), filehash);
 		let _ = Filesign::create_new_file(Origin::signed(owner2), tag.clone(), filehash);
-		let file1 = Filesign::get_file_by_id(1);
-		let file2 = Filesign::get_file_by_id(2);
+		let file1_opt = Filesign::get_file_by_id(1);
+		let file2_opt = Filesign::get_file_by_id(2);
+
+		assert!(file1_opt.is_some());
+		let file1 = file1_opt.unwrap();
+		assert!(file2_opt.is_some());
+		let file2 = file2_opt.unwrap();
 
 		assert_eq!(owner1, file1.owner);
 		assert_eq!(1, file1.id);
@@ -53,10 +61,10 @@ fn it_fails_for_create_new_file_incorrect_file_input() {
 		let owner = 3;
 
 		let create_file_result = Filesign::create_new_file(Origin::signed(owner), tag.clone(), filehash);		
-		let file = Filesign::get_file_by_id(1);
+		let file_opt = Filesign::get_file_by_id(1);
 
+		assert!(file_opt.is_none());
 		assert_ne!(create_file_result, DispatchResult::Ok(()));
-		assert_eq!(0, file.owner);
 	});
 }
 
@@ -69,7 +77,10 @@ fn it_works_assign_signer() {
 
 		let create_file_result = Filesign::create_new_file(Origin::signed(1), tag, filehash);
 		let assign_signer_result = Filesign::assign_signer(Origin::signed(1), 1, account_id);
-		let file = Filesign::get_file_by_id(1);
+		let file_opt = Filesign::get_file_by_id(1);
+
+		assert!(file_opt.is_some());
+		let file = file_opt.unwrap();
 
 		assert_ok!(create_file_result, ());
 		assert_ok!(assign_signer_result, ());
@@ -91,7 +102,10 @@ fn it_works_assign_signer_do_no_dublicates() {
 		// Try Dublicate:
 		let _ = Filesign::assign_signer(Origin::signed(1), 1, account_id);
 
-		let file = Filesign::get_file_by_id(1);
+		let file_opt = Filesign::get_file_by_id(1);
+
+		assert!(file_opt.is_some());
+		let file = file_opt.unwrap();
 
 		assert_ok!(create_file_result, ());
 		assert_ok!(assign_signer_result, ());
@@ -112,11 +126,16 @@ fn it_works_delete_signer() {
 		let assign_signer_result = Filesign::assign_signer(Origin::signed(1), 1, account_id);
 
 		// Check file state before delete
-		let file_with_signer = Filesign::get_file_by_id(1);
+		let file_with_signer_opt = Filesign::get_file_by_id(1);
 		let delete_signer_result = Filesign::delete_signer(Origin::signed(1), 1, account_id);
 
 		// Check file state after delete
-		let file_without_signer = Filesign::get_file_by_id(1);
+		let file_without_signer_opt = Filesign::get_file_by_id(1);
+
+		assert!(file_with_signer_opt.is_some());
+		let file_with_signer = file_with_signer_opt.unwrap();
+		assert!(file_without_signer_opt.is_some());
+		let file_without_signer = file_without_signer_opt.unwrap();
 
 		assert_ok!(create_file_result, ());
 		assert_ok!(assign_signer_result, ());
@@ -161,7 +180,10 @@ fn it_works_sign_latest_version() {
 		let assign_signer_result = Filesign::assign_signer(Origin::signed(1), 1, account_id);
 		let sign_latest_version_result = Filesign::sign_latest_version(Origin::signed(1), 1);
 		let _ = Filesign::sign_latest_version(Origin::signed(1), 1);
-		let file = Filesign::get_file_by_id(1);
+		let file_opt = Filesign::get_file_by_id(1);
+
+		assert!(file_opt.is_some());
+		let file = file_opt.unwrap();
 
 		assert_ok!(assign_signer_result, ());
 		assert_ok!(sign_latest_version_result, ());
@@ -177,7 +199,10 @@ fn it_fail_sign_latest_version_not_an_signer() {
 
 		let _ = Filesign::create_new_file(Origin::signed(1), tag, filehash);
 		let sign_latest_version_result = Filesign::sign_latest_version(Origin::signed(1), 1);
-		let file = Filesign::get_file_by_id(1);
+		let file_opt = Filesign::get_file_by_id(1);
+
+		assert!(file_opt.is_some());
+		let file = file_opt.unwrap();
 
 		assert_ne!(sign_latest_version_result, DispatchResult::Ok(()));
 		// Assert that no sign has been added
