@@ -122,6 +122,7 @@ decl_module! {
                 None => Err(Error::<T>::FileNotFound)?,
                 Some(file) => {
                     ensure!(Self::address_is_owner_for_file(&file, &caller), Error::<T>::AddressNotOwner);
+                    ensure!(Self::address_is_signer_for_file(&file, &signer), Error::<T>::AddressNotSigner);
                 }
             }
 
