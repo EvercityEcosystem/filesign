@@ -4,10 +4,10 @@ description = 'Pallet for file signatures'
 edition = '2018'
 homepage = 'https://evercity.io'
 license = 'Apache-2.0'
-name = 'pallet-audit'
+name = 'pallet-filesign'
 readme = '../README.md'
 repository = 'https://github.com/EvercityEcosystem/filesign'
-version = '3.0.0'
+version = '0.1.2'
 
 [dependencies.fixed-hash]
 version = "0.7"

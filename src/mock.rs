@@ -1,4 +1,4 @@
-use crate as pallet_audit;
+use crate as pallet_filesign;
 // use sp_core::H256;
 // use frame_support::sp_runtime::{
 // 	traits::{BlakeTwo256, IdentityLookup}, testing::Header,
@@ -22,8 +22,8 @@ frame_support::construct_runtime!(
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
-		System: frame_system::{Module, Call, Config, Storage},
-		Audit: pallet_audit::{Module, Call, Storage},
+		System: frame_system::{Module, Call, Config, Storage, Event<T>},
+		Filesign: pallet_filesign::{Module, Call, Storage, Event<T>},
 	}
 );
 
@@ -41,7 +41,7 @@ impl frame_system::Config for TestRuntime {
 	type AccountId = u64;
 	type Lookup = IdentityLookup<Self::AccountId>;
 	type Header = Header;
-	type Event = ();
+	type Event = Event;
 	type BlockHashCount = ();
 	type Version = ();
 	type PalletInfo = PalletInfo;
@@ -53,7 +53,8 @@ impl frame_system::Config for TestRuntime {
 	// type OnSetCode = ();
 }
 
-impl pallet_audit::Config for TestRuntime {
+impl pallet_filesign::Config for TestRuntime {
+	type Event = Event;
 }
 
 // Build genesis storage according to the mock runtime.
