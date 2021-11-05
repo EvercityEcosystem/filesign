@@ -82,8 +82,8 @@ decl_module! {
         #[weight = 10_000]
 		pub fn sign_latest_version(origin, id: u32) {
 			let caller = ensure_signed(origin)?;
-            ensure!(Self::address_is_signer_for_file(id, &caller), Error::<T>::AddressNotSigner);
             ensure!(FileByID::<T>::contains_key(id), Error::<T>::FileNotFound);
+            ensure!(Self::address_is_signer_for_file(id, &caller), Error::<T>::AddressNotSigner);
 
             FileByID::<T>::try_mutate(
                 id, |file_by_id| -> DispatchResult {
@@ -114,6 +114,7 @@ decl_module! {
         #[weight = 10_000]
         pub fn delete_signer(origin, id: u32, signer: T::AccountId)  {
             let caller = ensure_signed(origin)?;
+            ensure!(FileByID::<T>::contains_key(id), Error::<T>::FileNotFound);
             ensure!(Self::address_is_owner_for_file(id, &caller), Error::<T>::AddressNotOwner);
 
             FileByID::<T>::try_mutate(
@@ -131,6 +132,7 @@ decl_module! {
         #[weight = 10_000]
         pub fn assign_signer(origin, id: u32, signer: T::AccountId) {
             let caller = ensure_signed(origin)?;
+            ensure!(FileByID::<T>::contains_key(id), Error::<T>::FileNotFound);
             ensure!(Self::address_is_owner_for_file(id, &caller), Error::<T>::AddressNotOwner);
 
             FileByID::<T>::try_mutate(
