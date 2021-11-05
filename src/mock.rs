@@ -1,4 +1,4 @@
-use crate as pallet_audit;
+use crate as pallet_filesign;
 // use sp_core::H256;
 // use frame_support::sp_runtime::{
 // 	traits::{BlakeTwo256, IdentityLookup}, testing::Header,
@@ -23,7 +23,7 @@ frame_support::construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Module, Call, Config, Storage, Event<T>},
-		Audit: pallet_audit::{Module, Call, Storage, Event<T>},
+		Filesign: pallet_filesign::{Module, Call, Storage, Event<T>},
 	}
 );
 
@@ -53,7 +53,7 @@ impl frame_system::Config for TestRuntime {
 	// type OnSetCode = ();
 }
 
-impl pallet_audit::Config for TestRuntime {
+impl pallet_filesign::Config for TestRuntime {
 	type Event = Event;
 }
 

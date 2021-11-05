@@ -36,7 +36,7 @@ pub trait Config: frame_system::Config {
 }
 
 decl_storage! {
-    trait Store for Module<T: Config> as Audit {
+    trait Store for Module<T: Config> as Filesign {
         /// Storage map for file IDs
         FileByID
             get(fn file_by_id):
