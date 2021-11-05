@@ -66,7 +66,10 @@ decl_event! (
 decl_error! {
     pub enum Error for Module<T: Config> {
         AddressNotSigner,
-        AddressNotOwner
+        AddressNotOwner,
+        FileNotFound,
+        EmptyTag,
+        FileHasNoSigners,
     }
 }
 
@@ -79,6 +82,8 @@ decl_module! {
 		pub fn sign_latest_version(origin, id: u32) {
 			let caller = ensure_signed(origin)?;
             ensure!(Self::address_is_signer_for_file(id, &caller), Error::<T>::AddressNotSigner);
+            ensure!(FileByID::<T>::contains_key(id), Error::<T>::FileNotFound);
+
             FileByID::<T>::try_mutate(
                 id, |file_by_id| -> DispatchResult {
                     file_by_id.sign_latest_version(caller.clone());
@@ -91,9 +96,7 @@ decl_module! {
 
         #[weight = 10_000]
         pub fn create_new_file(origin, tag: Vec<u8>, filehash: H256) -> DispatchResult {
-            if tag.len() == 0 {
-                return Err(DispatchError::Other("empty input file"))
-            }
+            ensure!(tag.len() != 0, Error::<T>::EmptyTag);
             let caller = ensure_signed(origin)?;
             
             // Update last created file ID
@@ -114,9 +117,9 @@ decl_module! {
 
             FileByID::<T>::try_mutate(
                 id, |file_by_id| -> DispatchResult {
-                    if let Err(_) = file_by_id.delete_signer_from_file(signer.clone()) {
-                        return Err(DispatchError::Other("no signer"));
-                    }  
+                    ensure!(file_by_id.delete_signer_from_file(signer.clone()).is_ok(), 
+                        Error::<T>::FileHasNoSigners);
+
                     Ok(())
                 }
             )?;
