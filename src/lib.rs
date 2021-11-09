@@ -28,7 +28,7 @@ mod mock;
 
 #[cfg(test)]    
 mod tests;
-mod file;
+pub mod file;
 
 pub trait Config: frame_system::Config {
     type Event: From<Event<Self>> + Into<<Self as frame_system::Config>::Event>;
