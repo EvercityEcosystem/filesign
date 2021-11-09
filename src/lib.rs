@@ -187,7 +187,6 @@ impl<T: Config> Module<T> {
         file.owner == *address
     }
 
-    #[cfg(test)]
     fn get_file_by_id(id: u32) -> Option<FileStruct<<T as frame_system::Config>::AccountId>> {
         FileByID::<T>::get(id)
     }
