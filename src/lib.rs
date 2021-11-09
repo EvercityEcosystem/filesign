@@ -86,7 +86,7 @@ decl_module! {
             match FileByID::<T>::get(id) {
                 None => Err(Error::<T>::FileNotFound)?,
                 Some(file) => {
-                    ensure!(Self::address_is_signer_for_file(&file, &caller), Error::<T>::AddressNotSigner);
+                    ensure!(file.signers.iter().any(|x| *x == caller), Error::<T>::AddressNotSigner);
                 }
             }
 
@@ -123,8 +123,8 @@ decl_module! {
             match FileByID::<T>::get(id) {
                 None => Err(Error::<T>::FileNotFound)?,
                 Some(file) => {
-                    ensure!(Self::address_is_owner_for_file(&file, &caller), Error::<T>::AddressNotOwner);
-                    ensure!(Self::address_is_signer_for_file(&file, &signer), Error::<T>::AddressNotSigner);
+                    ensure!(file.owner == caller, Error::<T>::AddressNotOwner);
+                    ensure!(file.signers.iter().any(|x| *x == signer), Error::<T>::AddressNotSigner);
                 }
             }
 
@@ -147,7 +147,7 @@ decl_module! {
             match FileByID::<T>::get(id) {
                 None => Err(Error::<T>::FileNotFound)?,
                 Some(file) => {
-                    ensure!(Self::address_is_owner_for_file(&file, &caller), Error::<T>::AddressNotOwner);
+                    ensure!(file.owner == caller, Error::<T>::AddressNotOwner);
                 }
             }
 
@@ -166,28 +166,38 @@ decl_module! {
 
 impl<T: Config> Module<T> {
     /// <pre>
-    /// Method: address_is_signer_for_file(file: &FileStruct<T::AccountId>, address: &T::AccountId) -> bool
-    /// Arguments: file: &FileStruct<T::AccountId>, address: &T::AccountId - file, address
+    /// Method: address_is_auditor_for_file(id: u32, address: &T::AccountId) -> bool
+    /// Arguments: id: FileId, address: &T::AccountId - file ID, address
     ///
-    /// Checks if the address is an signer for the given file
+    /// Checks if the address is an auditor for the given file
     /// </pre>
-    pub fn address_is_signer_for_file(file: &FileStruct<T::AccountId>,
-         address: &T::AccountId) -> bool {
-        file.signers.iter().any(|x| x == address)
+    pub fn address_is_signer_for_file(id: FileId, address: &T::AccountId) -> bool {
+        match FileByID::<T>::get(id) {
+            None => false,
+            Some(file) => file.signers.iter().any(|x| x == address)
+        }
     }
 
     /// <pre>
-    /// Method: address_is_owner_for_file(file: &FileStruct<T::AccountId>, address: &T::AccountId) -> bool
-    /// Arguments: file: &FileStruct<T::AccountId>, address: &T::AccountId - file, address
+    /// Method: address_is_owner_for_file(id: u32, address: &T::AccountId) -> bool
+    /// Arguments: id: FileId, address: &T::AccountId - file ID, address
     ///
     /// Checks if the address is the owner for the given file
     /// </pre>
-    pub fn address_is_owner_for_file(file: &FileStruct<T::AccountId>,
-         address: &T::AccountId) -> bool {
-        file.owner == *address
+    pub fn address_is_owner_for_file(id: FileId, address: &T::AccountId) -> bool {
+        match FileByID::<T>::get(id) {
+            None => false,
+            Some(file) => file.owner == *address
+        }
     }
 
-    fn get_file_by_id(id: u32) -> Option<FileStruct<<T as frame_system::Config>::AccountId>> {
+    /// <pre>
+    /// Method: get_file_by_id(id: FileId) -> Option<FileStruct<<T as frame_system::Config>::AccountId>> 
+    /// Arguments: id: FileId - file ID
+    ///
+    /// Returns the file option
+    /// </pre>
+    pub fn get_file_by_id(id: FileId) -> Option<FileStruct<<T as frame_system::Config>::AccountId>> {
         FileByID::<T>::get(id)
     }
 }
