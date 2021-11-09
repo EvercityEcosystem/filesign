@@ -30,6 +30,8 @@ mod mock;
 mod tests;
 pub mod file;
 
+pub type FileId = u32;
+
 pub trait Config: frame_system::Config {
     type Event: From<Event<Self>> + Into<<Self as frame_system::Config>::Event>;
 }
@@ -39,10 +41,10 @@ decl_storage! {
         /// Storage map for file IDs
         FileByID
             get(fn file_by_id):
-            map hasher(blake2_128_concat) u32 => Option<FileStruct<T::AccountId>>;   
+            map hasher(blake2_128_concat) FileId => Option<FileStruct<T::AccountId>>;   
 
         /// Last Id of created file
-        LastID: u32;
+        LastID: FileId;
     }
 }
 
@@ -52,13 +54,13 @@ decl_event! (
         AccountId = <T as frame_system::Config>::AccountId,
     {
         /// \[account, fileid, signer\]
-        SignerAssigned(AccountId, u32, AccountId),
+        SignerAssigned(AccountId, FileId, AccountId),
         /// \[account, fileid\]
-        FileCreated(AccountId, u32),
+        FileCreated(AccountId, FileId),
         /// \[account, fileid, signer\]
-        SignerDeleted(AccountId, u32, AccountId),
+        SignerDeleted(AccountId, FileId, AccountId),
         /// \[account, fileid\]
-        FileSigned(AccountId, u32),
+        FileSigned(AccountId, FileId),
     }
 );
 
@@ -79,7 +81,7 @@ decl_module! {
         type Error = Error<T>;
 
         #[weight = 10_000]
-		pub fn sign_latest_version(origin, id: u32) {
+		pub fn sign_latest_version(origin, id: FileId) {
 			let caller = ensure_signed(origin)?;
             match FileByID::<T>::get(id) {
                 None => Err(Error::<T>::FileNotFound)?,
@@ -116,7 +118,7 @@ decl_module! {
         }
         
         #[weight = 10_000]
-        pub fn delete_signer(origin, id: u32, signer: T::AccountId)  {
+        pub fn delete_signer(origin, id: FileId, signer: T::AccountId)  {
             let caller = ensure_signed(origin)?;
             match FileByID::<T>::get(id) {
                 None => Err(Error::<T>::FileNotFound)?,

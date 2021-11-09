@@ -1,4 +1,5 @@
 {
+  "FileId": "u32",
   "SigStruct": {
     "address": "AccountId",
     "signed": "bool"
