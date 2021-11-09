@@ -1,5 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use crate::sp_api_hidden_includes_decl_storage::hidden_include::traits::Get;
 use frame_support::{
     ensure,
     decl_event,
@@ -80,7 +81,7 @@ decl_module! {
         fn deposit_event() = default;
         type Error = Error<T>;
 
-        #[weight = 10_000]
+        #[weight = T::DbWeight::get().reads_writes(1, 1) + 10_000]
 		pub fn sign_latest_version(origin, id: FileId) {
 			let caller = ensure_signed(origin)?;
             match FileByID::<T>::get(id) {
@@ -101,7 +102,7 @@ decl_module! {
             Self::deposit_event(RawEvent::FileSigned(caller, id));
 		}
 
-        #[weight = 10_000]
+        #[weight = T::DbWeight::get().reads_writes(2, 2) + 10_000]
         pub fn create_new_file(origin, tag: Vec<u8>, filehash: H256) -> DispatchResult {
             ensure!(tag.len() != 0, Error::<T>::EmptyTag);
             let caller = ensure_signed(origin)?;
@@ -117,7 +118,7 @@ decl_module! {
             Ok(())
         }
         
-        #[weight = 10_000]
+        #[weight = T::DbWeight::get().reads_writes(1, 1) + 10_000]
         pub fn delete_signer(origin, id: FileId, signer: T::AccountId)  {
             let caller = ensure_signed(origin)?;
             match FileByID::<T>::get(id) {
@@ -141,7 +142,7 @@ decl_module! {
             Self::deposit_event(RawEvent::SignerDeleted(caller, id, signer));
         }
 
-        #[weight = 10_000]
+        #[weight = T::DbWeight::get().reads_writes(1, 1) + 10_000]
         pub fn assign_signer(origin, id: u32, signer: T::AccountId) {
             let caller = ensure_signed(origin)?;
             match FileByID::<T>::get(id) {
