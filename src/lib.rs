@@ -180,6 +180,24 @@ impl<T: Config> Module<T> {
     }
 
     /// <pre>
+    /// Method: address_has_signed_the_file(id: u32, address: &T::AccountId) -> bool
+    /// Arguments: id: FileId, address: &T::AccountId - file ID, address
+    ///
+    /// Checks if the address has signed last version of the given file
+    /// </pre>
+    pub fn address_has_signed_the_file(id: FileId, address: &T::AccountId) -> bool {
+        match FileByID::<T>::get(id) {
+            None => false,
+            Some(file) => {
+                if let Some(vers_strunct) = file.versions.last() {
+                    return vers_strunct.signatures.iter().any(|sign| sign.address == *address && sign.signed);
+                }
+                false
+            }
+        }
+    }
+
+    /// <pre>
     /// Method: address_is_owner_for_file(id: u32, address: &T::AccountId) -> bool
     /// Arguments: id: FileId, address: &T::AccountId - file ID, address
     ///
