@@ -216,6 +216,7 @@ impl<T: Config> Module<T> {
     ///
     /// Returns the file option
     /// </pre>
+    #[inline]
     pub fn get_file_by_id(id: FileId) -> Option<FileStruct<<T as frame_system::Config>::AccountId>> {
         FileByID::<T>::get(id)
     }
