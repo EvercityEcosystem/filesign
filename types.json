@@ -13,6 +13,6 @@
     "owner": "AccountId",
     "id": "u32",
     "versions": "Vec<VersionStruct<AccountId>>",
-    "auditors":"Vec<AccountId>"
+    "signers":"Vec<AccountId>"
   }
 }
