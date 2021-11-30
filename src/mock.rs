@@ -1,10 +1,7 @@
+#![allow(clippy::from_over_into)]
+
 use crate as pallet_filesign;
-// use sp_core::H256;
-// use frame_support::sp_runtime::{
-// 	traits::{BlakeTwo256, IdentityLookup}, testing::Header,
-// };
-// use frame_system as system;
-// use frame_support::parameter_types;
+
 use frame_support::sp_runtime::{
     testing::Header,
     traits::{BlakeTwo256, IdentityLookup},
@@ -50,7 +47,6 @@ impl frame_system::Config for TestRuntime {
 	type OnKilledAccount = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
-	// type OnSetCode = ();
 }
 
 impl pallet_filesign::Config for TestRuntime {

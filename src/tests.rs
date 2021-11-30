@@ -13,7 +13,7 @@ fn it_works_for_create_new_file() {
 		let filehash = H256::from([0x66; 32]);
 		let owner = 3;
 
-		let create_file_result = Filesign::create_new_file(Origin::signed(owner), tag.clone(), filehash);
+		let create_file_result = Filesign::create_new_file(Origin::signed(owner), tag, filehash);
 		let file_option = Filesign::get_file_by_id(1);
 		
 		assert!(file_option.is_some());
@@ -37,7 +37,7 @@ fn it_works_for_create_new_file_increment_version() {
 		let owner2 = 1;
 
 		let _ = Filesign::create_new_file(Origin::signed(owner1), tag.clone(), filehash);
-		let _ = Filesign::create_new_file(Origin::signed(owner2), tag.clone(), filehash);
+		let _ = Filesign::create_new_file(Origin::signed(owner2), tag, filehash);
 		let file1_opt = Filesign::get_file_by_id(1);
 		let file2_opt = Filesign::get_file_by_id(2);
 
@@ -60,7 +60,7 @@ fn it_fails_for_create_new_file_incorrect_file_input() {
 		let filehash = H256::from([0x66; 32]);
 		let owner = 3;
 
-		let create_file_result = Filesign::create_new_file(Origin::signed(owner), tag.clone(), filehash);		
+		let create_file_result = Filesign::create_new_file(Origin::signed(owner), tag, filehash);		
 		let file_opt = Filesign::get_file_by_id(1);
 
 		assert!(file_opt.is_none());
@@ -122,7 +122,7 @@ fn it_works_delete_signer() {
 		let filehash = H256::from([0x66; 32]);
 		let account_id = 2;
 
-		let create_file_result = Filesign::create_new_file(Origin::signed(1), tag.clone(), filehash);
+		let create_file_result = Filesign::create_new_file(Origin::signed(1), tag, filehash);
 		let assign_signer_result = Filesign::assign_signer(Origin::signed(1), 1, account_id);
 
 		// Check file state before delete
@@ -153,7 +153,7 @@ fn it_fails_delete_signer_no_signers() {
 		let filehash = H256::from([0x66; 32]);
 
 		let account_id = 1;
-		let _ = Filesign::create_new_file(Origin::signed(1), tag.clone(), filehash);
+		let _ = Filesign::create_new_file(Origin::signed(1), tag, filehash);
 
 		// First - try to delete unexisting signer 
 		let delete_signer_result_no_signers = Filesign::delete_signer(Origin::signed(1), 1, account_id);

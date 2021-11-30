@@ -1,3 +1,4 @@
+#![allow(clippy::unused_unit)]
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use crate::sp_api_hidden_includes_decl_storage::hidden_include::traits::Get;
@@ -67,10 +68,15 @@ decl_event! (
 
 decl_error! {
     pub enum Error for Module<T: Config> {
+        /// Address is not a signer 
         AddressNotSigner,
+        /// Address is not an owner of a file
         AddressNotOwner,
+        /// No such file in storage
         FileNotFound,
+        /// Validation error - no tag
         EmptyTag,
+        /// Validation error - no tag
         FileHasNoSigners,
     }
 }
@@ -81,30 +87,9 @@ decl_module! {
         fn deposit_event() = default;
         type Error = Error<T>;
 
-        #[weight = T::DbWeight::get().reads_writes(1, 1) + 10_000]
-		pub fn sign_latest_version(origin, id: FileId) {
-			let caller = ensure_signed(origin)?;
-            match FileByID::<T>::get(id) {
-                None => Err(Error::<T>::FileNotFound)?,
-                Some(file) => {
-                    ensure!(file.signers.iter().any(|x| *x == caller), Error::<T>::AddressNotSigner);
-                }
-            }
-
-            FileByID::<T>::try_mutate(
-                id, |file_by_id| -> DispatchResult {
-                    ensure!(file_by_id.as_ref().is_some(), Error::<T>::FileNotFound);
-                    file_by_id.as_mut().unwrap().sign_latest_version(caller.clone());
-
-                    Ok(())
-                })?;
-
-            Self::deposit_event(RawEvent::FileSigned(caller, id));
-		}
-
         #[weight = T::DbWeight::get().reads_writes(2, 2) + 10_000]
         pub fn create_new_file(origin, tag: Vec<u8>, filehash: H256) -> DispatchResult {
-            ensure!(tag.len() != 0, Error::<T>::EmptyTag);
+            ensure!(!tag.is_empty(), Error::<T>::EmptyTag);
             let caller = ensure_signed(origin)?;
             
             // Update last created file ID
@@ -117,24 +102,40 @@ decl_module! {
             Self::deposit_event(RawEvent::FileCreated(caller, new_id));
             Ok(())
         }
+
+        #[weight = T::DbWeight::get().reads_writes(1, 1) + 10_000]
+		pub fn sign_latest_version(origin, id: FileId) {
+			let caller = ensure_signed(origin)?;
+            FileByID::<T>::try_mutate(
+                id, |file_option| -> DispatchResult {
+                    match file_option {
+                        None => return Err(Error::<T>::FileNotFound.into()),
+                        Some(file) => {
+                            ensure!(file.signers.iter().any(|x| *x == caller), Error::<T>::AddressNotSigner);
+                            file.sign_latest_version(caller.clone());
+                        }
+                    }
+                    Ok(())
+                })?;
+
+            Self::deposit_event(RawEvent::FileSigned(caller, id));
+		}
         
         #[weight = T::DbWeight::get().reads_writes(1, 1) + 10_000]
         pub fn delete_signer(origin, id: FileId, signer: T::AccountId)  {
             let caller = ensure_signed(origin)?;
-            match FileByID::<T>::get(id) {
-                None => Err(Error::<T>::FileNotFound)?,
-                Some(file) => {
-                    ensure!(file.owner == caller, Error::<T>::AddressNotOwner);
-                    ensure!(file.signers.iter().any(|x| *x == signer), Error::<T>::AddressNotSigner);
-                }
-            }
 
             FileByID::<T>::try_mutate(
-                id, |file_by_id| -> DispatchResult {
-                    ensure!(file_by_id.as_ref().is_some(), Error::<T>::FileNotFound);
-                    ensure!(file_by_id.as_mut().unwrap().delete_signer_from_file(signer.clone()).is_ok(), 
-                        Error::<T>::FileHasNoSigners);
-
+                id, |file_option| -> DispatchResult {
+                    match file_option {
+                        None => return Err(Error::<T>::FileNotFound.into()),
+                        Some(file) => {
+                            ensure!(file.owner == caller, Error::<T>::AddressNotOwner);
+                            ensure!(file.signers.iter().any(|x| *x == signer), Error::<T>::AddressNotSigner);
+                            ensure!(file.delete_signer_from_file(signer.clone()).is_ok(), 
+                                   Error::<T>::AddressNotSigner);
+                        }
+                    }
                     Ok(())
                 }
             )?;
@@ -145,17 +146,16 @@ decl_module! {
         #[weight = T::DbWeight::get().reads_writes(1, 1) + 10_000]
         pub fn assign_signer(origin, id: u32, signer: T::AccountId) {
             let caller = ensure_signed(origin)?;
-            match FileByID::<T>::get(id) {
-                None => Err(Error::<T>::FileNotFound)?,
-                Some(file) => {
-                    ensure!(file.owner == caller, Error::<T>::AddressNotOwner);
-                }
-            }
 
             FileByID::<T>::try_mutate(
-                id, |file_by_id| -> DispatchResult {
-                    ensure!(file_by_id.as_ref().is_some(), Error::<T>::FileNotFound);
-                    file_by_id.as_mut().unwrap().assign_signer_to_file(signer.clone());
+                id, |file_option| -> DispatchResult {
+                    match file_option {
+                        None => return Err(Error::<T>::FileNotFound.into()),
+                        Some(file) => {
+                            ensure!(file.owner == caller, Error::<T>::AddressNotOwner);
+                            file.assign_signer_to_file(signer.clone());
+                        }
+                    }
                     Ok(())
                 }
             )?;

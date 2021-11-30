@@ -39,6 +39,7 @@ pub struct FileStruct<AccountId> where AccountId: PartialEq {
     pub signers: Vec<AccountId>,
 }
 
+#[allow(clippy::vec_init_then_push)]
 impl<AccountId> FileStruct<AccountId> where AccountId: PartialEq {
     // Constructor for file
     pub fn new(owner: AccountId, id: u32, tag: Vec<u8>, filehash: &H256) -> Self {
