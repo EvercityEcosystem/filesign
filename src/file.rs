@@ -82,6 +82,7 @@ impl<AccountId> FileStruct<AccountId> where AccountId: PartialEq {
     }
 
     // Removes signer from file
+    #[allow(clippy::result_unit_err)]
     pub fn delete_signer_from_file (&mut self, signer: AccountId) -> Result<(), ()> {
         let index = match self.signers.iter().position(|a| a == &signer) {
             Some(i) => i,

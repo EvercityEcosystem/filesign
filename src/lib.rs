@@ -1,6 +1,12 @@
 #![allow(clippy::unused_unit)]
 #![cfg_attr(not(feature = "std"), no_std)]
 
+#[cfg(test)]
+mod mock;
+#[cfg(test)]    
+mod tests;
+pub mod file;
+
 use crate::sp_api_hidden_includes_decl_storage::hidden_include::traits::Get;
 use frame_support::{
     ensure,
@@ -16,21 +22,12 @@ use frame_support::{
 use frame_system::{
     ensure_signed,
 };
-
 use frame_support::sp_std::{
     cmp::{
         Eq, 
         PartialEq}, 
 };
-
 use file::{FileStruct, H256};
-
-#[cfg(test)]
-mod mock;
-
-#[cfg(test)]    
-mod tests;
-pub mod file;
 
 pub type FileId = u32;
 
