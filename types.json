@@ -1,4 +1,5 @@
 {
+  "FileId": "u32",
   "SigStruct": {
     "address": "AccountId",
     "signed": "bool"
@@ -12,6 +13,6 @@
     "owner": "AccountId",
     "id": "u32",
     "versions": "Vec<VersionStruct<AccountId>>",
-    "auditors":"Vec<AccountId>"
+    "signers":"Vec<AccountId>"
   }
 }

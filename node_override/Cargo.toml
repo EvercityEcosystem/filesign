@@ -3,7 +3,7 @@ members = [
     'node',
     'pallets/template',
     'runtime',
-    'pallets/audit',
+    'pallets/filesign',
 ]
 [profile.release]
 panic = 'unwind'
