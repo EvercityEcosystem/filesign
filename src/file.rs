@@ -8,7 +8,6 @@ use frame_support::{
         Vec,
     }
 };
-use uuid::Uuid;
 use frame_support::sp_runtime::RuntimeDebug;
 
 construct_fixed_hash! {
@@ -95,6 +94,6 @@ impl<AccountId> FileStruct<AccountId> where AccountId: PartialEq {
     }
 }
 
-pub fn generate_file_id() -> FileId {
-    *Uuid::new_v4().as_bytes()
-}
+// pub fn generate_file_id() -> FileId {
+//     *Uuid::new_v4().as_bytes()
+// }

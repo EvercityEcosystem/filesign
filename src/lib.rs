@@ -88,7 +88,8 @@ decl_module! {
             let file_id = match file_id_option {
                 Some(id) => id,
                 None => {
-                    file::generate_file_id()
+                    // file::generate_file_id()
+                    todo!("implement random generating, no file id specified");
                 }
             };
 
