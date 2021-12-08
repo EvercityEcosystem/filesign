@@ -70,6 +70,8 @@ decl_error! {
         EmptyTag,
         /// Validation error - no tag
         FileHasNoSigners,
+        /// File id is busy
+        IdAlreadyExists,
     }
 }
 
@@ -79,7 +81,7 @@ decl_module! {
         fn deposit_event() = default;
         type Error = Error<T>;
 
-        #[weight = T::DbWeight::get().reads_writes(2, 2) + 10_000]
+        #[weight = T::DbWeight::get().reads_writes(2, 1) + 10_000]
         pub fn create_new_file(origin, tag: Vec<u8>, filehash: H256, file_id_option: Option<FileId>) -> DispatchResult {
             ensure!(!tag.is_empty(), Error::<T>::EmptyTag);
             let caller = ensure_signed(origin)?;
@@ -92,7 +94,7 @@ decl_module! {
                     todo!("implement random generating, no file id specified");
                 }
             };
-
+            ensure!(<FileByID<T>>::get(file_id).is_none(), Error::<T>::IdAlreadyExists);
             let new_file = FileStruct::<<T as frame_system::Config>::AccountId>::new(caller.clone(), file_id, tag, &filehash);
             <FileByID<T>>::insert(file_id, new_file);
             Self::deposit_event(RawEvent::FileCreated(caller, file_id));
