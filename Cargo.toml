@@ -35,7 +35,8 @@ frame-support = { default-features = false, version = '3.0.0' }
 frame-system = { default-features = false, version = '3.0.0' }
 pallet-timestamp = { default-features = false, version = '3.0.0' }
 sp-api = { default-features = false, version = '3.0.0' }
-uuid = { version = "0.8", features = ["serde", "v4", "wasm-bindgen"] }
+uuid = { version = "0.8", features = ["serde", "v4", "wasm-bindgen", "stdweb"] }
+# uuid = { version = "0.8", default-features = true }
 
 [dev-dependencies]
 sp-core = {  version = '3.0.0' }
