@@ -29,9 +29,6 @@ use frame_support::sp_std::{
 };
 use file::{FileStruct, H256, FileId};
 
-// pub type FileId = u32;
-
-
 pub trait Config: frame_system::Config {
     type Event: From<Event<Self>> + Into<<Self as frame_system::Config>::Event>;
 }
@@ -44,10 +41,6 @@ decl_storage! {
             map hasher(blake2_128_concat) FileId => Option<FileStruct<T::AccountId>>;
     }
 }
-
-
-        /// Last Id of created file
-        // LastID: FileId;
 
 decl_event! (
     pub enum Event<T>
@@ -95,12 +88,10 @@ decl_module! {
             let file_id = match file_id_option {
                 Some(id) => id,
                 None => {
-                    panic!()
+                    file::generate_file_id()
                 }
             };
 
-
-            // let new_id = LastID::get() + 1;
             let new_file = FileStruct::<<T as frame_system::Config>::AccountId>::new(caller.clone(), file_id, tag, &filehash);
             <FileByID<T>>::insert(file_id, new_file);
             Self::deposit_event(RawEvent::FileCreated(caller, file_id));

@@ -57,3 +57,23 @@ impl pallet_filesign::Config for TestRuntime {
 pub fn new_test_ext() -> frame_support::sp_io::TestExternalities {
 	frame_system::GenesisConfig::default().build_storage::<TestRuntime>().unwrap().into()
 }
+
+// Build genesis storage for event testing
+pub fn new_test_ext_with_event() -> frame_support::sp_io::TestExternalities {
+    let t = frame_system::GenesisConfig::default()
+        .build_storage::<TestRuntime>()
+        .unwrap();
+
+	let mut ext = sp_io::TestExternalities::new(t);
+	ext.execute_with(|| System::set_block_number(1));
+	ext
+}
+
+// get and cut last event
+#[allow(clippy::result_unit_err)] 
+pub fn last_event() -> Result<Event, ()> {
+	match System::events().pop() {
+		Some(ev) => Ok(ev.event),
+		None => Err(())
+	}
+}

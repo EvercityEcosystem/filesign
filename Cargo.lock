@@ -1134,6 +1134,7 @@ dependencies = [
  "serde",
  "sp-api",
  "sp-core",
+ "sp-io",
  "uuid",
 ]
 

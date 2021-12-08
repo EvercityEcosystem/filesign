@@ -30,6 +30,44 @@ fn it_works_for_create_new_file() {
 }
 
 #[test]
+fn it_works_for_create_new_file_no_file_id() {
+	new_test_ext_with_event().execute_with(|| {
+		let tag = vec![40, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+		let filehash = H256::from([0x66; 32]);
+		let owner = 3;
+
+		let create_file_result = Filesign::create_new_file(Origin::signed(owner), tag, filehash, None);
+
+		let event = last_event().unwrap();
+
+		// get file id from event
+		let file_id = match event {
+			Event::pallet_filesign(e) => {
+				match e {
+					crate::RawEvent::FileCreated(_, id) => {
+						id
+					},
+					_ => panic!("event not right")
+				}
+			},
+			_ => panic!("event not tight")
+		};
+
+		let file_option = Filesign::get_file_by_id(file_id);
+		assert!(file_option.is_some());
+		let file = file_option.unwrap();
+
+		assert_ne!([0; 16], file_id);
+		assert_ok!(create_file_result, ());
+		assert_eq!(owner, file.owner);
+		assert_eq!(file_id, file.id);
+		assert_eq!(filehash, file.versions[0].filehash);
+		assert_eq!(1, file.versions.len());
+		assert_eq!(0, file.signers.len());
+	});
+}
+
+#[test]
 fn it_fails_for_create_new_file_incorrect_file_input() {
 	new_test_ext().execute_with(|| {
 		let tag = Vec::new();
