@@ -27,9 +27,10 @@ use frame_support::sp_std::{
         Eq, 
         PartialEq}, 
 };
-use file::{FileStruct, H256};
+use file::{FileStruct, H256, FileId};
 
-pub type FileId = u32;
+// pub type FileId = u32;
+
 
 pub trait Config: frame_system::Config {
     type Event: From<Event<Self>> + Into<<Self as frame_system::Config>::Event>;
@@ -40,12 +41,13 @@ decl_storage! {
         /// Storage map for file IDs
         FileByID
             get(fn file_by_id):
-            map hasher(blake2_128_concat) FileId => Option<FileStruct<T::AccountId>>;   
-
-        /// Last Id of created file
-        LastID: FileId;
+            map hasher(blake2_128_concat) FileId => Option<FileStruct<T::AccountId>>;
     }
 }
+
+
+        /// Last Id of created file
+        // LastID: FileId;
 
 decl_event! (
     pub enum Event<T>
@@ -85,18 +87,23 @@ decl_module! {
         type Error = Error<T>;
 
         #[weight = T::DbWeight::get().reads_writes(2, 2) + 10_000]
-        pub fn create_new_file(origin, tag: Vec<u8>, filehash: H256) -> DispatchResult {
+        pub fn create_new_file(origin, tag: Vec<u8>, filehash: H256, file_id_option: Option<FileId>) -> DispatchResult {
             ensure!(!tag.is_empty(), Error::<T>::EmptyTag);
             let caller = ensure_signed(origin)?;
             
             // Update last created file ID
-            let new_id = LastID::get() + 1;
-            let new_file = FileStruct::<<T as frame_system::Config>::AccountId>::new(caller.clone(), new_id, tag, &filehash);
+            let file_id = match file_id_option {
+                Some(id) => id,
+                None => {
+                    panic!()
+                }
+            };
 
-            <FileByID<T>>::insert(new_id, new_file);
-            LastID::mutate(|x| *x += 1);
 
-            Self::deposit_event(RawEvent::FileCreated(caller, new_id));
+            // let new_id = LastID::get() + 1;
+            let new_file = FileStruct::<<T as frame_system::Config>::AccountId>::new(caller.clone(), file_id, tag, &filehash);
+            <FileByID<T>>::insert(file_id, new_file);
+            Self::deposit_event(RawEvent::FileCreated(caller, file_id));
             Ok(())
         }
 
@@ -141,7 +148,7 @@ decl_module! {
         }
 
         #[weight = T::DbWeight::get().reads_writes(1, 1) + 10_000]
-        pub fn assign_signer(origin, id: u32, signer: T::AccountId) {
+        pub fn assign_signer(origin, id: FileId, signer: T::AccountId) {
             let caller = ensure_signed(origin)?;
 
             FileByID::<T>::try_mutate(

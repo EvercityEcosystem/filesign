@@ -8,7 +8,7 @@ use frame_support::{
         Vec,
     }
 };
-
+use uuid::Uuid;
 use frame_support::sp_runtime::RuntimeDebug;
 
 construct_fixed_hash! {
@@ -16,6 +16,8 @@ construct_fixed_hash! {
     #[derive(Encode, Decode)]
     pub struct H256(32);
 }
+
+pub type FileId = [u8; 16];
 
 #[derive(Encode, Decode, Clone, Default, Eq, PartialEq, RuntimeDebug)]
 pub struct SigStruct<AccountId> {
@@ -34,7 +36,7 @@ pub struct VersionStruct<AccountId> {
 #[derive(Encode, Decode, Clone, Default, Eq, PartialEq, RuntimeDebug)]
 pub struct FileStruct<AccountId> where AccountId: PartialEq {
     pub owner: AccountId,
-    pub id: u32,
+    pub id: FileId,
     pub versions: Vec<VersionStruct<AccountId>>,
     pub signers: Vec<AccountId>,
 }
@@ -42,7 +44,7 @@ pub struct FileStruct<AccountId> where AccountId: PartialEq {
 #[allow(clippy::vec_init_then_push)]
 impl<AccountId> FileStruct<AccountId> where AccountId: PartialEq {
     // Constructor for file
-    pub fn new(owner: AccountId, id: u32, tag: Vec<u8>, filehash: &H256) -> Self {
+    pub fn new(owner: AccountId, id: FileId, tag: Vec<u8>, filehash: &H256) -> Self {
         let empty_vec = Vec::new();
         let latest_version = VersionStruct {
             tag,
@@ -91,4 +93,8 @@ impl<AccountId> FileStruct<AccountId> where AccountId: PartialEq {
         self.signers.remove(index);
         Ok(())
     }
+}
+
+pub fn generate_file_id() -> FileId {
+    *Uuid::new_v4().as_bytes()
 }
