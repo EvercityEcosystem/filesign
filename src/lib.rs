@@ -7,6 +7,7 @@ mod mock;
 mod tests;
 pub mod file;
 
+use crate::sp_api_hidden_includes_decl_storage::hidden_include::traits::Randomness;
 use crate::sp_api_hidden_includes_decl_storage::hidden_include::traits::Get;
 use frame_support::{
     ensure,
@@ -31,6 +32,7 @@ use file::{FileStruct, H256, FileId};
 
 pub trait Config: frame_system::Config {
     type Event: From<Event<Self>> + Into<<Self as frame_system::Config>::Event>;
+    type Randomness: frame_support::traits::Randomness<Self::Hash>;
 }
 
 decl_storage! {
@@ -89,10 +91,7 @@ decl_module! {
             // Update last created file ID
             let file_id = match file_id_option {
                 Some(id) => id,
-                None => {
-                    // file::generate_file_id()
-                    todo!("implement random generating, no file id specified");
-                }
+                None => Self::get_random_id(&caller)
             };
             ensure!(<FileByID<T>>::get(file_id).is_none(), Error::<T>::IdAlreadyExists);
             let new_file = FileStruct::<<T as frame_system::Config>::AccountId>::new(caller.clone(), file_id, tag, &filehash);
@@ -217,5 +216,16 @@ impl<T: Config> Module<T> {
     #[inline]
     pub fn get_file_by_id(id: FileId) -> Option<FileStruct<<T as frame_system::Config>::AccountId>> {
         FileByID::<T>::get(id)
+    }
+
+    fn get_random_id(caller: &T::AccountId) -> FileId {
+        let payload = (
+            // <pallet_randomness_collective_flip::Module<T> as frame_support::traits::Randomness<T::Hash>>::random_seed(),
+            T::Randomness::random_seed(),
+            caller,
+            frame_system::Pallet::<T>::extrinsic_index()
+        );
+
+        codec::Encode::using_encoded(&payload, sp_io::hashing::blake2_128)
     }
 }

@@ -20,6 +20,7 @@ frame_support::construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Module, Call, Config, Storage, Event<T>},
+		RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Module, Call, Storage},
 		Filesign: pallet_filesign::{Module, Call, Storage, Event<T>},
 	}
 );
@@ -51,6 +52,7 @@ impl frame_system::Config for TestRuntime {
 
 impl pallet_filesign::Config for TestRuntime {
 	type Event = Event;
+	type Randomness = RandomnessCollectiveFlip;
 }
 
 // Build genesis storage according to the mock runtime.
