@@ -81,10 +81,10 @@ fn it_works_for_create_new_file_no_file_id() {
 					_ => panic!("event not right")
 				}
 			},
-			_ => panic!("event not tight")
+			_ => panic!("event not right")
 		};
 
-		let create_file_result = Filesign::create_new_file(Origin::signed(3), tag, filehash, None);
+		let create_file_result = Filesign::create_new_file(Origin::signed(owner), tag, filehash, None);
 
 		let event = last_event().unwrap();
 
@@ -98,7 +98,7 @@ fn it_works_for_create_new_file_no_file_id() {
 					_ => panic!("event not right")
 				}
 			},
-			_ => panic!("event not tight")
+			_ => panic!("event not right")
 		};
 
 

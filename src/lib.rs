@@ -9,6 +9,7 @@ pub mod file;
 
 use crate::sp_api_hidden_includes_decl_storage::hidden_include::traits::Randomness;
 use crate::sp_api_hidden_includes_decl_storage::hidden_include::traits::Get;
+use codec::Encode;
 use frame_support::{
     ensure,
     decl_event,
@@ -32,7 +33,7 @@ use file::{FileStruct, H256, FileId};
 
 pub trait Config: frame_system::Config {
     type Event: From<Event<Self>> + Into<<Self as frame_system::Config>::Event>;
-    // type Randomness: frame_support::traits::Randomness<Self::Hash>;
+    type Randomness: frame_support::traits::Randomness<Self::Hash>;
 }
 
 decl_storage! {
@@ -41,6 +42,9 @@ decl_storage! {
         FileByID
             get(fn file_by_id):
             map hasher(blake2_128_concat) FileId => Option<FileStruct<T::AccountId>>;
+
+        /// Last Id of created file
+        NonceId: u64;
     }
 }
 
@@ -91,7 +95,8 @@ decl_module! {
             // Update last created file ID
             let file_id = match file_id_option {
                 Some(id) => id,
-                None => file::generate_file_id() //Self::get_random_id(&caller)
+                // None => file::generate_file_id() //Self::get_random_id(&caller)
+                None => Self::get_random_id(&caller)
             };
             ensure!(<FileByID<T>>::get(file_id).is_none(), Error::<T>::IdAlreadyExists);
             let new_file = FileStruct::<<T as frame_system::Config>::AccountId>::new(caller.clone(), file_id, tag, &filehash);
@@ -218,14 +223,25 @@ impl<T: Config> Module<T> {
         FileByID::<T>::get(id)
     }
 
-    // fn get_random_id(caller: &T::AccountId) -> FileId {
-    //     let payload = (
-    //         // <pallet_randomness_collective_flip::Module<T> as frame_support::traits::Randomness<T::Hash>>::random_seed(),
-    //         T::Randomness::random_seed(),
-    //         caller,
-    //         frame_system::Pallet::<T>::extrinsic_index()
-    //     );
+    fn get_random_id(caller: &T::AccountId) -> FileId {
+        // let payload = (
+        //     // <pallet_randomness_collective_flip::Module<T> as frame_support::traits::Randomness<T::Hash>>::random_seed(),
+        //     T::Randomness::random_seed(),
+        //     caller,
+        //     frame_system::Pallet::<T>::extrinsic_index()
+        // );
 
-    //     codec::Encode::using_encoded(&payload, sp_io::hashing::blake2_128)
-    // }
+        // codec::Encode::using_encoded(&payload, sp_io::hashing::blake2_128)
+        let nonce = Self::get_and_increment_nonce();
+        let rand = T::Randomness::random(&nonce);
+        codec::Encode::using_encoded(&rand, sp_io::hashing::blake2_128)
+        // todo!()
+    }
+
+    fn get_and_increment_nonce() -> Vec<u8> {
+        let nonce = NonceId::get();
+        NonceId::put(nonce.wrapping_add(1));
+        nonce.encode()
+        // frame_support::dispatch::Encode::encode()
+    }
 }

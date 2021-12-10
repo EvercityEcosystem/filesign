@@ -94,13 +94,13 @@ impl<AccountId> FileStruct<AccountId> where AccountId: PartialEq {
     }
 }
 
-pub fn generate_file_id() -> FileId {
-    // *uuid::Uuid::new_v4().as_bytes()
-    use rand::{
-        self, Rng,
-        distributions::{Distribution, Uniform},
-    };
+// pub fn generate_file_id() -> FileId {
+//     // *uuid::Uuid::new_v4().as_bytes()
+//     use rand::{
+//         self, Rng,
+//         distributions::{Distribution, Uniform},
+//     };
 
-    let mut rng = rand::thread_rng().gen::<[u8; 16]>();
-    rng
-}
+//     let mut rng = rand::thread_rng().gen::<[u8; 16]>();
+//     rng
+// }

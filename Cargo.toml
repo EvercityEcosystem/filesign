@@ -38,7 +38,7 @@ sp-api = { default-features = false, version = '3.0.0' }
 pallet-randomness-collective-flip = { default-features = false, version = '3.0.0' }
 
 sp-io = { default-features = false, version = '3.0.0' }
-rand = { version = '0.8.2' }
+# rand = { version = '0.8.4', features = ['js'] }
 # uuid = { version = "0.8", features = ["serde", "v4", "wasm-bindgen", "stdweb", "no_std"] }
 
 [dev-dependencies]
