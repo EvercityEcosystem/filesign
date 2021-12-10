@@ -32,7 +32,7 @@ use file::{FileStruct, H256, FileId};
 
 pub trait Config: frame_system::Config {
     type Event: From<Event<Self>> + Into<<Self as frame_system::Config>::Event>;
-    type Randomness: frame_support::traits::Randomness<Self::Hash>;
+    // type Randomness: frame_support::traits::Randomness<Self::Hash>;
 }
 
 decl_storage! {
@@ -218,14 +218,14 @@ impl<T: Config> Module<T> {
         FileByID::<T>::get(id)
     }
 
-    fn get_random_id(caller: &T::AccountId) -> FileId {
-        let payload = (
-            // <pallet_randomness_collective_flip::Module<T> as frame_support::traits::Randomness<T::Hash>>::random_seed(),
-            T::Randomness::random_seed(),
-            caller,
-            frame_system::Pallet::<T>::extrinsic_index()
-        );
+    // fn get_random_id(caller: &T::AccountId) -> FileId {
+    //     let payload = (
+    //         // <pallet_randomness_collective_flip::Module<T> as frame_support::traits::Randomness<T::Hash>>::random_seed(),
+    //         T::Randomness::random_seed(),
+    //         caller,
+    //         frame_system::Pallet::<T>::extrinsic_index()
+    //     );
 
-        codec::Encode::using_encoded(&payload, sp_io::hashing::blake2_128)
-    }
+    //     codec::Encode::using_encoded(&payload, sp_io::hashing::blake2_128)
+    // }
 }

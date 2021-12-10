@@ -53,7 +53,7 @@ impl frame_system::Config for TestRuntime {
 
 impl pallet_filesign::Config for TestRuntime {
 	type Event = Event;
-	type Randomness = RandomnessCollectiveFlip;
+	// type Randomness = RandomnessCollectiveFlip;
 	// type Randomness = Babe;
 }
 
