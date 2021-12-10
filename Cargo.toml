@@ -42,7 +42,7 @@ uuid = { version = "0.8", features = ["serde", "v4", "wasm-bindgen", "stdweb"], 
 
 [dev-dependencies]
 sp-core = {  version = '3.0.0' }
-pallet-babe = { default-features = false, version = '3.0.0' }
+# pallet-babe = { default-features = false, version = '3.0.0' }
 
 [features]
 default = ['std']
@@ -55,5 +55,5 @@ std = [
     'frame-system/std',
     'pallet-timestamp/std',
     'pallet-randomness-collective-flip/std',
-    'pallet-babe/std'
+    # 'pallet-babe/std'
 ]
