@@ -43,7 +43,7 @@ decl_storage! {
             get(fn file_by_id):
             map hasher(blake2_128_concat) FileId => Option<FileStruct<T::AccountId>>;
 
-        /// Last Id of created file
+        /// Nonce for random file id generating 
         NonceId: u64;
     }
 }

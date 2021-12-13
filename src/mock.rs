@@ -22,7 +22,6 @@ frame_support::construct_runtime!(
 		System: frame_system::{Module, Call, Config, Storage, Event<T>},
 		RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Module, Call, Storage},
 		Filesign: pallet_filesign::{Module, Call, Storage, Event<T>},
-		// Babe: pallet_babe::{Module, Call, Storage},
 	}
 );
 
@@ -54,18 +53,7 @@ impl frame_system::Config for TestRuntime {
 impl pallet_filesign::Config for TestRuntime {
 	type Event = Event;
 	type Randomness = RandomnessCollectiveFlip;
-	// type Randomness = Babe;
 }
-
-// impl pallet_babe::Config for TestRuntime {
-// 	// type Event = Event;
-// 	// // type Randomness = RandomnessCollectiveFlip;
-// 	// type Randomness = Babe;
-// 	// type Moment = u64;
-//     // type OnTimestampSet = ();
-//     // type MinimumPeriod = MinimumPeriod;
-//     type WeightInfo = ();
-// }
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> frame_support::sp_io::TestExternalities {
