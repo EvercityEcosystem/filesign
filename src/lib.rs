@@ -95,8 +95,7 @@ decl_module! {
             // Update last created file ID
             let file_id = match file_id_option {
                 Some(id) => id,
-                // None => file::generate_file_id() //Self::get_random_id(&caller)
-                None => Self::get_random_id(&caller)
+                None => Self::get_random_id()
             };
             ensure!(<FileByID<T>>::get(file_id).is_none(), Error::<T>::IdAlreadyExists);
             let new_file = FileStruct::<<T as frame_system::Config>::AccountId>::new(caller.clone(), file_id, tag, &filehash);
@@ -223,25 +222,15 @@ impl<T: Config> Module<T> {
         FileByID::<T>::get(id)
     }
 
-    fn get_random_id(caller: &T::AccountId) -> FileId {
-        // let payload = (
-        //     // <pallet_randomness_collective_flip::Module<T> as frame_support::traits::Randomness<T::Hash>>::random_seed(),
-        //     T::Randomness::random_seed(),
-        //     caller,
-        //     frame_system::Pallet::<T>::extrinsic_index()
-        // );
-
-        // codec::Encode::using_encoded(&payload, sp_io::hashing::blake2_128)
+    fn get_random_id() -> FileId {
         let nonce = Self::get_and_increment_nonce();
         let rand = T::Randomness::random(&nonce);
         codec::Encode::using_encoded(&rand, sp_io::hashing::blake2_128)
-        // todo!()
     }
 
     fn get_and_increment_nonce() -> Vec<u8> {
         let nonce = NonceId::get();
         NonceId::put(nonce.wrapping_add(1));
         nonce.encode()
-        // frame_support::dispatch::Encode::encode()
     }
 }

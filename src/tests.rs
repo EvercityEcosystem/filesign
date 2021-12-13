@@ -67,23 +67,6 @@ fn it_works_for_create_new_file_no_file_id() {
 		let filehash = H256::from([0x66; 32]);
 		let owner = 3;
 
-		let create_file_result = Filesign::create_new_file(Origin::signed(owner), tag.clone(), filehash, None);
-
-		let event_1 = last_event().unwrap();
-
-		// get file id from event
-		let file_id_1 = match event_1 {
-			Event::pallet_filesign(e) => {
-				match e {
-					crate::RawEvent::FileCreated(_, id) => {
-						id
-					},
-					_ => panic!("event not right")
-				}
-			},
-			_ => panic!("event not right")
-		};
-
 		let create_file_result = Filesign::create_new_file(Origin::signed(owner), tag, filehash, None);
 
 		let event = last_event().unwrap();
@@ -107,7 +90,6 @@ fn it_works_for_create_new_file_no_file_id() {
 		let file = file_option.unwrap();
 
 		assert_ne!([0; 16], file_id);
-		assert_ne!(file_id_1, file_id);
 		assert_ok!(create_file_result, ());
 		assert_eq!(owner, file.owner);
 		assert_eq!(file_id, file.id);
