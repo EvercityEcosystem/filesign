@@ -4,7 +4,7 @@ Filesign is a substrate pallet which allows to create and store files with diffe
 ## Main features:
 - file versioning
 - store file hashes for each version
-- assign auditors to files
+- assign signers to files
 - provide file signing
 
 
@@ -13,9 +13,11 @@ Add the pallet to the [Substrate node template](https://github.com/substrate-dev
 Add the following snippets of code to the runtime/lib.rs:
 
 ```
-pub use pallet_audit;
+use pallet_evercity_filesign;
 
-impl pallet_audit::Config for Runtime {
+impl pallet_evercity_filesign::Config for Runtime {
+    type Event = Event;
+    type Randomness = RandomnessCollectiveFlip;
 }
 
 construct_runtime!(
@@ -25,22 +27,15 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
         ...
-        Audit: pallet_audit::{Pallet, Call, Storage},
+        EvercityFilesign: pallet_evercity_filesign::{ Module, Call, Storage, Event<T> },
 	}
 );
 ```
 
 Add the following dependencies to runtime Cargo.toml:
 ```
-[dependencies.pallet-audit]
-default-features = false
-path = '../pallets/audit'
-version = '3.0.0'
-```
-
-Add to root folder Cargo.toml:
-```
-'pallets/audit',
+[dependenciest]
+pallet-evercity-filesign = { default-features = false, version = '0.1.3', git = 'https://github.com/EvercityEcosystem/filesign'}
 ```
 
 Run:
