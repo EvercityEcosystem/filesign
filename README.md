@@ -34,7 +34,7 @@ construct_runtime!(
 
 Add the following dependencies to runtime Cargo.toml:
 ```
-[dependenciest]
+[dependencies]
 pallet-evercity-filesign = { default-features = false, version = '0.1.3', git = 'https://github.com/EvercityEcosystem/filesign'}
 ```
 
